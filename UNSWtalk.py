@@ -1,4 +1,5 @@
-#!/web/cs2041/bin/python3.6.3
+#!/usr/bin/env python3
+# !/web/cs2041/bin/python3.6.3
 
 # written by andrewt@cse.unsw.edu.au October 2017
 # as a starting point for COMP[29]041 assignment 2
@@ -10,6 +11,7 @@ from flask import Flask, render_template, session
 students_dir = "dataset-medium";
 
 app = Flask(__name__)
+app.secret_key = os.urandom(12)
 
 # Show unformatted details for student "n"
 # Increment n and store it in the session cookie
@@ -27,5 +29,5 @@ def start():
     return render_template('start.html', student_details=details)
 
 if __name__ == '__main__':
-    app.secret_key = os.urandom(12)
+    # app.secret_key = os.urandom(12)
     app.run(debug=True)
