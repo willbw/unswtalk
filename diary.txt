@@ -1,1 +1,2 @@
 05/10/17	18:00	18:15	put the first real entry in diary.txt (delete this line!)
+19/10/17        20:46   22:00   Commencing the assignment
