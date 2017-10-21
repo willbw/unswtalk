@@ -76,7 +76,7 @@ def user(zid=None):
     post_fields = ['time', 'from', 'msg']
     for file in post_filenames:
         file = os.path.join(students_dir, student_to_show, file)
-        with open(file) as f:
+        with open(file, 'r', encoding='utf8') as f:
             posts.append(['','',''])
             print(f)
             for line in f:
