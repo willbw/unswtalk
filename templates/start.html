@@ -39,9 +39,16 @@
 </div>
 <div class="row">
 	<div class="col-sm-3">
-		{% for friend in friends %}
-		<p><a href="{{url_for('user', zid=friend)}}">{{ friend }} lol</a></p>
-		{% endfor %}
+        <div class="well text-center">Friend List</div>
+    		{% for friend in friends %}
+            <div class="row">
+                <div class="well">
+                <img src="{{url_for('static',filename=friend[2])}}" height="75" width="75"></img>
+        		<a href="{{url_for('user', zid=friend[0])}}">{{ friend[1] }}</a>
+            </div>
+            </div> 
+    		{% endfor %}
+        </div>
 	</div>
 </div>
 

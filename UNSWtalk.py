@@ -30,31 +30,40 @@ fields = ['birthday',
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
-def start(zid = None):
-    n = session.get('n', 0)
-    students = sorted(os.listdir(students_dir))
-    students = [x for x in students if not x.startswith('.')]
-    student_to_show = students[n % len(students)]
-    details = {}
-    details_filename = os.path.join(students_dir, student_to_show, "student.txt")
-    if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-        details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
-    else: details['picture'] = os.path.join("egg.gif")
-    with open(details_filename) as f:
-        for line in f:
-            line = line.rstrip()
-            for field in fields:
-                if line.startswith(field):
-                    details[field] = line[len(field)+2:] 
-                    break
-    details['friends'] = re.sub(r'[\(\)]','', details['friends'])
-    details['friends'] = details['friends'].split(', ')
-    session['n'] = n + 1
-    return render_template('start.html', **details, students_dir=students_dir) 
+# def start(zid = None):
+#     n = session.get('n', 0)
+#     students = sorted(os.listdir(students_dir))
+#     students = [x for x in students if not x.startswith('.')]
+#     student_to_show = students[n % len(students)]
+
+#     user(student_to_show)
+
+#     # details = {}
+#     # details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+#     # if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
+#     #     details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
+#     # else: details['picture'] = os.path.join("egg.gif")
+#     # with open(details_filename) as f:
+#     #     for line in f:
+#     #         line = line.rstrip()
+#     #         for field in fields:
+#     #             if line.startswith(field):
+#     #                 details[field] = line[len(field)+2:] 
+#     #                 break
+#     # details['friends'] = re.sub(r'[\(\)]','', details['friends'])
+#     # details['friends'] = details['friends'].split(', ')
+#     # session['n'] = n + 1
+#     # return render_template('start.html', **details, students_dir=students_dir) 
 
 @app.route('/user/<zid>', methods=['GET','POST'])
-def user(zid):
-    student_to_show = zid
+def user(zid=None):
+    n = session.get('n', 0)
+    if zid is None:
+        students = sorted(os.listdir(students_dir))
+        students = [x for x in students if not x.startswith('.')]
+        student_to_show = students[n % len(students)]
+    else: 
+        student_to_show = zid
     details = {}
     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
     if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
@@ -69,9 +78,20 @@ def user(zid):
                     break
     details['friends'] = re.sub(r'[\(\)]','', details['friends'])
     details['friends'] = details['friends'].split(', ')
-    for friend in details['friends']:
-        print(friend)
-
+    for i, friend in enumerate(details['friends']):
+        details_filename = os.path.join(students_dir, friend, "student.txt")
+        if os.path.exists(os.path.join(students_dir, friend, "img.jpg")):
+            friendpic = os.path.join(students_dir, friend, "img.jpg") 
+        else: friendpic = os.path.join("egg.gif")
+        with open(details_filename) as f:
+            for line in f:
+                line = line.rstrip()
+                if line.startswith('full_name'):
+                    friend_name = line[len('full_name')+2:] 
+                    break
+        details['friends'][i] = [friend, friend_name, friendpic] 
+    print(details['friends'])
+    session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir) 
 
 if __name__ == '__main__':
