@@ -6,12 +6,13 @@
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
 import os, re
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, make_response
 
 students_dir = "dataset-medium";
 
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Show unformatted details for student "n"
 # Increment n and store it in the session cookie
@@ -58,10 +59,12 @@ fields = ['birthday',
 @app.route('/user/<zid>', methods=['GET','POST'])
 def user(zid=None):
     n = session.get('n', 0)
-    if zid is None:
+    if zid is None and request.cookies.get('user_id') is None:
         students = sorted(os.listdir(students_dir))
         students = [x for x in students if not x.startswith('.')]
         student_to_show = students[n % len(students)]
+    elif request.cookies.get('user_id'):
+        student_to_show = request.cookies.get('user_id') 
     else: 
         student_to_show = zid
     details = {}
@@ -90,7 +93,6 @@ def user(zid=None):
                     friend_name = line[len('full_name')+2:] 
                     break
         details['friends'][i] = [friend, friend_name, friendpic] 
-    print(details['friends'])
     session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir) 
 
@@ -119,6 +121,38 @@ def results():
     # students = sorted(os.listdir(students_dir))
     # students = [x for x in students if not x.startswith('.')]
     # student_to_show = students[n % len(students)]
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+        details_filename = os.path.join(students_dir, user_id, "student.txt")
+        with open(details_filename) as f:
+            this_zid = ''
+            this_password = ''
+            for line in f:
+                line = line.rstrip()
+                if line.startswith('zid'):
+                    this_zid = line[len('zid')+2: ] 
+                elif line.startswith('password'):
+                    this_password = line[len('password')+2:] 
+                elif line.startswith('full_name'):
+                    name = line[len('full_name')+2: ] 
+            if user_id == this_zid and password == this_password:
+                print("yay i made it")
+                resp = make_response(render_template("success.html"))
+                resp.set_cookie('user_id', user_id)
+                resp.set_cookie('user_name', name)
+                return resp 
+        return 'Failed Login'
+
+@app.route('/logout', methods=['GET','POST'])
+def logout():
+    resp = make_response(render_template("logout.html"))
+    resp.set_cookie('user_id', '', expires=0)
+    resp.set_cookie('user_name', '', expires=0)
+    return resp
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)

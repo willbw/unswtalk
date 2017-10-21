@@ -9,23 +9,39 @@
 <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
       <a class="navbar-brand" href="#">UNSWTalk</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+       {% if 'user_id' in request.cookies %}
+       {% set my_id = request.cookies.get('user_id') %}
+       {% set my_name = request.cookies.get('user_name') %}
         <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link">Welcome {{ my_name }}</a>
+            </li>
           <li class="nav-item active">
-            <a class="nav-link" href="#">Profile<span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="{{url_for('user', zid=my_id)}}">My Profile<span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
+            <form class="form-inline my-2 my-lg-0" action="{{ url_for('logout') }}" method="POST">
+            <button class="btn btn-outline-danger my-2 mr-sm-2 my-sm-0" type="submit">Logout</button>
+          </form>
         </ul>
+        {% endif %}
+        <form class="form-inline my-2 my-lg-0" action="{{ url_for('results') }}" method="POST">
+          {% if not 'user_id' in request.cookies %}
+          <form class="form-inline my-2 my-lg-0" action="{{ url_for('login') }}" method="POST">
+            <button class="btn btn-outline-info my-2 mr-sm-2 my-sm-0" type="submit">Create Account</button>
+          </form>
+          <form class="form-inline my-2 my-lg-0" action="{{ url_for('login') }}" method="POST">
+            <input class="form-control mr-sm-2" type="text" name="user_id" placeholder="zID">
+            <input class="form-control mr-sm-2" type="text" name="password" placeholder="Password">
+            <button class="btn btn-outline-success my-2 mr-sm-2 my-sm-0" type="submit">Login</button>
+          </form>
+          {% endif %}
+          <ul class="nav navbar-nav ml-auto justify-content-end">
         <form class="form-inline my-2 my-lg-0" action="{{ url_for('results') }}" method="POST">
           <input class="form-control mr-sm-2" type="text" name="query" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
+        </ul>
       </div>
     </nav>
 <div class="container">
