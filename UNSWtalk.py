@@ -6,7 +6,7 @@
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
 import os, re
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request
 
 students_dir = "dataset-medium";
 
@@ -94,11 +94,31 @@ def user(zid=None):
     session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir) 
 
-@app.route('/search/<term>', methods=['GET','POST'])
-def search(term=None):
-    students = sorted(os.listdir(students_dir))
-    students = [x for x in students if not x.startswith('.')]
-    student_to_show = students[n % len(students)]
+@app.route('/results', methods=['GET','POST'])
+def results():
+    if request.method == 'POST':
+        query = request.form['query']
+        print(type(query))
+        students = sorted(os.listdir(students_dir))
+        students = [x for x in students if not x.startswith('.')]
+        result = []
+        for student_to_show in students:
+            details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+            with open(details_filename) as f:
+                for line in f:
+                    line = line.rstrip()
+                    if line.startswith('full_name'):
+                        name = line[len('full_name')+2:] 
+                        break
+            if query.lower() in name.lower():
+                if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
+                    pic = os.path.join(students_dir, student_to_show, "img.jpg") 
+                else: pic = os.path.join("egg.gif")
+                result.append((student_to_show, name, pic))
+        return render_template("results.html", result = result)
+    # students = sorted(os.listdir(students_dir))
+    # students = [x for x in students if not x.startswith('.')]
+    # student_to_show = students[n % len(students)]
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
