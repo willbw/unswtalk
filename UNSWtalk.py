@@ -52,8 +52,8 @@ def start(zid = None):
     session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir) 
 
-@app.route('/user/<zid>')
-def show_profile(zid):
+@app.route('/user/<zid>', methods=['GET','POST'])
+def user(zid):
     student_to_show = zid
     details = {}
     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
