@@ -78,7 +78,7 @@ def user(zid=None):
         file = os.path.join(students_dir, student_to_show, file)
         with open(file) as f:
             posts.append(['','',''])
-            for line in f:
+            for line in f.encode('utf-8'):
                 line = line.rstrip()
                 line = line.replace('\\n', '<br/>')
                 if line.startswith('from'):
