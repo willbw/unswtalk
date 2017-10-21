@@ -69,6 +69,18 @@ def user(zid=None):
         student_to_show = zid
     details = {}
     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+
+    posts = []
+    post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
+    post_filenames = [x for x in post_filenames if re.match('[0-9].txt', x)]
+    for file in post_filenames:
+        file = os.path.join(students_dir, student_to_show, file)
+        with open(file) as f:
+            for line in f:
+                line = line.replace('\\n', '<br/>')
+                posts.append(line)
+    print(posts)
+
     if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
         details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
     else: details['picture'] = os.path.join("egg.gif")
@@ -94,7 +106,7 @@ def user(zid=None):
                     break
         details['friends'][i] = [friend, friend_name, friendpic] 
     session['n'] = n + 1
-    return render_template('start.html', **details, students_dir=students_dir) 
+    return render_template('start.html', **details, students_dir=students_dir, curr_zid=student_to_show, posts=posts) 
 
 @app.route('/results', methods=['GET','POST'])
 def results():

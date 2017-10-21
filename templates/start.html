@@ -49,6 +49,14 @@
                 </li>
             <!-- </div>  -->
     		{% endfor %}
+	    	</ul>
+        </div>
+        <div class="col-sm-9">
+        	{% if posts %}
+        	{% for post in posts %}
+        	<p> {{ post|safe }}</p>
+        	{% endfor %}
+        	{% endif %}
         </div>
 	</div>
 </div>
