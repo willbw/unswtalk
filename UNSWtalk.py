@@ -105,8 +105,6 @@ def user(zid=None):
     details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
     details['age'] = int(details['age'].days // 365.25)
 
-    print(details['age']) 
-
     # FRIEND LIST
     details['friends'] = re.sub(r'[\(\)]','', details['friends'])
     details['friends'] = details['friends'].split(', ')
