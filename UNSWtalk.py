@@ -30,9 +30,8 @@ fields = ['birthday',
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
-def start():
+def start(zid = None):
     n = session.get('n', 0)
-    print(n)
     students = sorted(os.listdir(students_dir))
     students = [x for x in students if not x.startswith('.')]
     student_to_show = students[n % len(students)]
@@ -48,9 +47,32 @@ def start():
                 if line.startswith(field):
                     details[field] = line[len(field)+2:] 
                     break
-
+    details['friends'] = re.sub(r'[\(\)]','', details['friends'])
+    details['friends'] = details['friends'].split(', ')
     session['n'] = n + 1
-    return render_template('start.html', **details) 
+    return render_template('start.html', **details, students_dir=students_dir) 
+
+@app.route('/user/<zid>')
+def show_profile(zid):
+    student_to_show = zid
+    details = {}
+    details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+    if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
+        details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
+    else: details['picture'] = os.path.join("egg.gif")
+    with open(details_filename) as f:
+        for line in f:
+            line = line.rstrip()
+            for field in fields:
+                if line.startswith(field):
+                    details[field] = line[len(field)+2:] 
+                    break
+    details['friends'] = re.sub(r'[\(\)]','', details['friends'])
+    details['friends'] = details['friends'].split(', ')
+    for friend in details['friends']:
+        print(friend)
+
+    return render_template('start.html', **details, students_dir=students_dir) 
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)

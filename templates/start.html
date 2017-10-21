@@ -4,11 +4,15 @@
 <div class="row">
 	<div class="col-sm-12" style="background-color:yellow;">
 		<h2>{{full_name}}</h2>
+		<form method="POST" action="">
+		    <input type="hidden" name="n" value="7">
+		    <input type="submit" value="Next student" class="unswtalk_button">
+		</form>
 	</div>
 </div>
 <div class="row">
-	<div class="col-sm-3" style="background-color:blue;">	
-		<img src="{{url_for('static',filename=picture)}}"></img>
+	<div class="col-sm-3">	
+		<img src="{{url_for('static',filename=picture)}}" class="img-thumbnail"></img>
 	</div>
 	<div class="col-sm-9" style="background-color:pink;">	
 		<table class="table">
@@ -33,17 +37,14 @@
 		</table>
 	</div>
 </div>
-<form method="POST" action="">
-    <input type="hidden" name="n" value="7">
-    <input type="submit" value="Next student" class="unswtalk_button">
-</form>
-<div>
+<div class="row">
+	<div class="col-sm-3">
+		{% for friend in friends %}
+		<p><a href="/user/{{friend}}">{{ friend }}</a></p>
+		{% endfor %}
 	</div>
-<div class="unswtalk_user_details">
-
-{{student_details}}
-
 </div>
 
-
+<div>
+	</div>
 {% endblock %}
