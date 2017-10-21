@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+
+<ul class="list-group">
+<li class="list-group-item">Search Results</li> 
+{% for value in result %}
+    <li class="list-group-item">
+    <img src="{{url_for('static',filename=value[2])}}" class="rounded-circle" height="35" width="35">
+    <a href="{{url_for('user', zid=value[0])}}">{{ value[1] }}</a>
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}
