@@ -5,7 +5,7 @@
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
-import os, re
+import os, re, calendar
 from flask import Flask, render_template, session, request, make_response
 
 students_dir = "dataset-medium";
@@ -73,12 +73,20 @@ def user(zid=None):
     posts = []
     post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
     post_filenames = [x for x in post_filenames if re.match('[0-9].txt', x)]
+    post_fields = ['time', 'from', 'msg']
     for file in post_filenames:
         file = os.path.join(students_dir, student_to_show, file)
         with open(file) as f:
+            posts.append(['','',''])
             for line in f:
+                line = line.rstrip()
                 line = line.replace('\\n', '<br/>')
-                posts.append(line)
+                if line.startswith('from'):
+                    posts[-1][0] = getName(line[len('from')+2: ])
+                elif line.startswith('time'):
+                    posts[-1][1] = getDate(line[len('time')+2: ])
+                elif line.startswith('message'):
+                    posts[-1][2] = line[len('message')+2: ]
     print(posts)
 
     if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
@@ -98,13 +106,7 @@ def user(zid=None):
         if os.path.exists(os.path.join(students_dir, friend, "img.jpg")):
             friendpic = os.path.join(students_dir, friend, "img.jpg") 
         else: friendpic = os.path.join("egg.gif")
-        with open(details_filename) as f:
-            for line in f:
-                line = line.rstrip()
-                if line.startswith('full_name'):
-                    friend_name = line[len('full_name')+2:] 
-                    break
-        details['friends'][i] = [friend, friend_name, friendpic] 
+        details['friends'][i] = [friend, getName(friend), friendpic] 
     session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir, curr_zid=student_to_show, posts=posts) 
 
@@ -165,6 +167,27 @@ def logout():
     resp.set_cookie('user_id', '', expires=0)
     resp.set_cookie('user_name', '', expires=0)
     return resp
+
+def getName(zid):
+    details_filename = os.path.join(students_dir, zid, "student.txt")
+    with open(details_filename) as f:
+        for line in f:
+            line = line.rstrip()
+            if line.startswith('full_name'):
+                name = line[len('full_name')+2:] 
+                return name
+
+def getDate(date):
+    # 1 - year, 2 - month, 3 - day, 4 - time
+    regex = re.match('([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}:[0-9]{2}).*', date)
+    year = regex.group(1)
+    month = calendar.month_name[int(regex.group(2))]
+    day = regex.group(3)
+    time = regex.group(4)
+    return "{} {} {} at {}".format(day, month, year, time)
+
+    # 13 October 2017 at 21:45
+
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
