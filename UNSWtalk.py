@@ -6,6 +6,7 @@
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
 import os, re, calendar
+from datetime import date
 from flask import Flask, render_template, session, request, make_response
 
 students_dir = "dataset-medium";
@@ -70,6 +71,8 @@ def user(zid=None):
     details = {}
     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
 
+
+    # POSTS
     posts = []
     post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
     post_filenames = [x for x in post_filenames if re.match('[0-9].txt', x)]
@@ -78,7 +81,6 @@ def user(zid=None):
         file = os.path.join(students_dir, student_to_show, file)
         with open(file, 'r', encoding='utf8') as f:
             posts.append(['','',''])
-            print(f)
             for line in f:
                 line = line.rstrip()
                 line = line.replace('\\n', '<br/>')
@@ -89,6 +91,7 @@ def user(zid=None):
                 elif line.startswith('message'):
                     posts[-1][2] = line[len('message')+2: ]
 
+    # USER DETAILS
     if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
         details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
     else: details['picture'] = os.path.join("egg.gif")
@@ -99,6 +102,12 @@ def user(zid=None):
                 if line.startswith(field):
                     details[field] = line[len(field)+2:] 
                     break
+    details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
+    details['age'] = int(details['age'].days // 365.25)
+
+    print(details['age']) 
+
+    # FRIEND LIST
     details['friends'] = re.sub(r'[\(\)]','', details['friends'])
     details['friends'] = details['friends'].split(', ')
     for i, friend in enumerate(details['friends']):
