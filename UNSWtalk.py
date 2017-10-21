@@ -78,7 +78,8 @@ def user(zid=None):
         file = os.path.join(students_dir, student_to_show, file)
         with open(file) as f:
             posts.append(['','',''])
-            for line in f.encode('utf-8'):
+            print(f)
+            for line in f:
                 line = line.rstrip()
                 line = line.replace('\\n', '<br/>')
                 if line.startswith('from'):
@@ -87,7 +88,6 @@ def user(zid=None):
                     posts[-1][1] = getDate(line[len('time')+2: ])
                 elif line.startswith('message'):
                     posts[-1][2] = line[len('message')+2: ]
-    print(posts)
 
     if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
         details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
@@ -114,7 +114,6 @@ def user(zid=None):
 def results():
     if request.method == 'POST':
         query = request.form['query']
-        print(type(query))
         students = sorted(os.listdir(students_dir))
         students = [x for x in students if not x.startswith('.')]
         result = []
@@ -154,7 +153,6 @@ def login():
                 elif line.startswith('full_name'):
                     name = line[len('full_name')+2: ] 
             if user_id == this_zid and password == this_password:
-                print("yay i made it")
                 resp = make_response(render_template("success.html"))
                 resp.set_cookie('user_id', user_id)
                 resp.set_cookie('user_name', name)
