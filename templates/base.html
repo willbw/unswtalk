@@ -4,11 +4,21 @@
 <title>unswtalk</title>
 <link href="{{url_for('static', filename='bootstrap.min.css')}}") rel="stylesheet">
 <link href="{{url_for('static', filename='unswtalk.css')}}") rel="stylesheet">
+<script src="//code.jquery.com/jquery-3.2.1.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+
+
+
+
+
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <div class="container">
       <a class="navbar-brand" href="#">UNSWTalk</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
        {% if 'user_id' in request.cookies %}
        {% set my_id = request.cookies.get('user_id') %}
@@ -43,13 +53,19 @@
         </form>
         </ul>
       </div>
+    </div>
     </nav>
+
+
+
+
+
 <div class="container">
     {% block body_contents %}
     {% endblock %}
 </div>
 <script src="{{url_for('static', filename='bootstrap.min.js')}}")></script>
 <script src="{{url_for('static', filename='popper.min.js')}}")></script>
- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='collapse.js')}}")></script>
 </body>
 </html>
