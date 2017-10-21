@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+
+<p>Logout successful.</p>
+{% set my_id = request.cookies.get('user_id') %}
+<meta http-equiv="refresh" content="1;url={{url_for('user')}}"/>
+{% endblock %}

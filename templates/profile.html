@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+<div class="row">
+	<div class="col-sm-12" style="background-color:yellow;">
+		<h2>{{full_name}}</h2>
+		<form method="POST" action="">
+		    <input type="hidden" name="n" value="7">
+		    <input type="submit" value="Next student" class="unswtalk_button">
+		</form>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-3">	
+		<img src="{{url_for('static',filename=picture)}}" class="img-thumbnail"></img>
+	</div>
+	<div class="col-sm-9" style="background-color:pink;">	
+		<table class="table">
+			<tbody>
+				<tr>
+					<td>zID</td>
+					<td>{{zid}}</td>
+				</tr>
+				<tr>
+					<td>Birthday</td>
+					<td>{{birthday}}</td>
+				</tr>
+				<tr>
+					<td>Program</td>
+					<td>{{program}}</td>
+				</tr>
+				<tr>
+					<td>Suburb</td>
+					<td>{{home_suburb}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-3">
+		{% for friend in friends %}
+		<p> {{ friend }} </p>
+		{% endfor %}
+	</div>
+</div>
+
+<div>
+	</div>
+{% endblock %}
