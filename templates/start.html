@@ -12,7 +12,7 @@
 </div>
 <div class="row">
 	<div class="col-sm-3">	
-		<img src="{{url_for('static',filename=picture)}}" class="img-thumbnail"></img>
+		<img src="{{url_for('static',filename=picture)}}"></img>
 	</div>
 	<div class="col-sm-9" style="background-color:pink;">	
 		<table class="table">
@@ -39,19 +39,17 @@
 </div>
 <div class="row">
 	<div class="col-sm-3">
-        <div class="well text-center">Friend List</div>
+            <ul class="list-group">
+            <li class="list-group-item">Friends List</li> 
     		{% for friend in friends %}
-            <div class="row">
-                <div class="well">
-                <img src="{{url_for('static',filename=friend[2])}}" height="75" width="75"></img>
+            <!-- <div class="row"> -->
+                <li class="list-group-item">
+                <img src="{{url_for('static',filename=friend[2])}}" class="rounded-circle" height="35" width="35">
         		<a href="{{url_for('user', zid=friend[0])}}">{{ friend[1] }}</a>
-            </div>
-            </div> 
+                </li>
+            <!-- </div>  -->
     		{% endfor %}
         </div>
 	</div>
 </div>
-
-<div>
-	</div>
 {% endblock %}
