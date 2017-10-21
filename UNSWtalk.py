@@ -94,6 +94,12 @@ def user(zid=None):
     session['n'] = n + 1
     return render_template('start.html', **details, students_dir=students_dir) 
 
+@app.route('/search/<term>', methods=['GET','POST'])
+def search(term=None):
+    students = sorted(os.listdir(students_dir))
+    students = [x for x in students if not x.startswith('.')]
+    student_to_show = students[n % len(students)]
+
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
     app.run(debug=True)
