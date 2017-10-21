@@ -63,7 +63,7 @@ def user(zid=None):
         students = sorted(os.listdir(students_dir))
         students = [x for x in students if not x.startswith('.')]
         student_to_show = students[n % len(students)]
-    elif request.cookies.get('user_id'):
+    elif zid is None and request.cookies.get('user_id'):
         student_to_show = request.cookies.get('user_id') 
     else: 
         student_to_show = zid
