@@ -88,12 +88,13 @@ class Post:
 
 
 class Comment:
-    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, replies=None, num_replies=0, time=None, related_to=None, hsh=None):
+    def __init__(self, file, parent_zid, post_id, comment_id=None, zid=None, message=None, fmessage=None, replies=None, num_replies=0, time=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         self.parent_zid = parent_zid
         self.message = ''
         self.num_replies = num_replies
+        self.comment_id = self.file.split('-')[-1].replace('.txt','')
         with open(self.file, 'r', encoding='utf8') as f:
             # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
             for line in f:
@@ -133,11 +134,12 @@ class Comment:
         return int(match.group(1))
 
 class Reply:
-    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, time=None, related_to=None, hsh=None):
+    def __init__(self, file, parent_zid, post_id, reply_id=None, zid=None, message=None, fmessage=None, time=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         self.parent_zid = parent_zid
         self.message = ''
+        self.reply_id = self.file.split('-')[-1].replace('.txt','')
         with open(self.file, 'r', encoding='utf8') as f:
             # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
             for line in f:
@@ -397,6 +399,23 @@ def newcomment():
         num_comments = s[post_zid].posts[int(post_id)].num_comments
         newcomment_filename = post_id + '-' + str(num_comments) + '.txt'
         with open(os.path.join(students_dir, post_zid, newcomment_filename), 'w') as f:
+            f.write('time: '+ datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
+            f.write('from: '+student+'\n')
+            f.write('message: '+message)
+        s[post_zid].refreshPosts()
+        return redirect(url_for('start'))
+
+@app.route('/newreply', methods=['GET','POST'])
+def newreply():
+    if request.method == 'POST':
+        student = request.cookies.get('user_id') 
+        post_zid = request.form['post_zid']
+        post_id = request.form['post_id']
+        comment_id = request.form['comment_id']
+        message = request.form['comment']
+        num_replies = s[post_zid].posts[int(post_id)].comments[int(comment_id)].num_replies
+        newreply_filename = post_id + '-' + comment_id + '-' + str(num_replies) + '.txt'
+        with open(os.path.join(students_dir, post_zid, newreply_filename), 'w') as f:
             f.write('time: '+ datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
             f.write('from: '+student+'\n')
             f.write('message: '+message)
