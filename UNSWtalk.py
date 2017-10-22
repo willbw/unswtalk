@@ -30,6 +30,16 @@ fields = ['birthday',
           'program',
           'zid']
 
+def getDate(date):
+    # 1 - year, 2 - month, 3 - day, 4 - time
+    regex = re.match('([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}:[0-9]{2}).*', date)
+    year = regex.group(1)
+    month = calendar.month_name[int(regex.group(2))]
+    day = regex.group(3)
+    time = regex.group(4)
+    return "{} {} {} at {}".format(day, month, year, time)
+    # 13 October 2017 at 21:45
+
 class Post:
     def __init__(self, file, post_id, zid=None, message=None, comments=None, time=None, related_to=None):
         self.file = file
@@ -181,8 +191,9 @@ class Student:
         self.program = details['program']
 
     def getPosts(self):
-        my_related - []
+        my_related = []
         for key, student in s.items():
+            student.refresh()
             for post in student.posts:
                 if self.zid in post.related_to:
                     my_related.append(post)
@@ -207,30 +218,40 @@ def start():
     #posts
     post_id = 0
     student_to_show = request.cookies.get('user_id') 
-    posts = []
-    post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
-    post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
-    post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
-    post_fields = ['time', 'from', 'msg']
-    for file in post_filenames:
-        print("FILE:",file)
-        file = os.path.join(students_dir, student_to_show, file)
-        with open(file, 'r', encoding='utf8') as f:
-            # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
-            posts.append(['','','', str(post_id), '', '', []])
-            for line in f:
-                line = line.rstrip()
-                line = line.replace('\\n', '<br/>')
-                if line.startswith('from'):
-                    posts[-1][0] = getName(line[len('from')+2: ])
-                    posts[-1][4] = getPicture(line[len('from')+2: ])
-                    posts[-1][5] = line[len('from')+2: ]
-                elif line.startswith('time'):
-                    posts[-1][1] = getDate(line[len('time')+2: ])
-                elif line.startswith('message'):
-                    posts[-1][2] = line[len('message')+2: ]
-        post_id += 1
-    return render_template('start.html', curr_zid=student_to_show, posts=posts) 
+
+    related_posts = s[student_to_show].getPosts()
+    for p in related_posts:
+        print(s[p.zid].full_name, p.time, p.message)
+        for c in p.comments:
+            print('comment:', s[c.zid].full_name, c.time, c.message)
+            for r in c.replies:
+                print('comment reply:', s[r.zid].full_name, r.time, r.message)
+
+
+    # posts = []
+    # post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
+    # post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
+    # post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
+    # post_fields = ['time', 'from', 'msg']
+    # for file in post_filenames:
+    #     # print("FILE:",file)
+    #     file = os.path.join(students_dir, student_to_show, file)
+    #     with open(file, 'r', encoding='utf8') as f:
+    #         # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
+    #         posts.append(['','','', str(post_id), '', '', []])
+    #         for line in f:
+    #             line = line.rstrip()
+    #             line = line.replace('\\n', '<br/>')
+    #             if line.startswith('from'):
+    #                 posts[-1][0] = getName(line[len('from')+2: ])
+    #                 posts[-1][4] = getPicture(line[len('from')+2: ])
+    #                 posts[-1][5] = line[len('from')+2: ]
+    #             elif line.startswith('time'):
+    #                 posts[-1][1] = getDate(line[len('time')+2: ])
+    #             elif line.startswith('message'):
+    #                 posts[-1][2] = line[len('message')+2: ]
+    #     post_id += 1
+    return render_template('start.html') 
 
 # def start(zid = None):
 #     n = session.get('n', 0)
@@ -357,15 +378,6 @@ def getName(zid):
                 name = line[len('full_name')+2:] 
                 return name
 
-def getDate(date):
-    # 1 - year, 2 - month, 3 - day, 4 - time
-    regex = re.match('([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}:[0-9]{2}).*', date)
-    year = regex.group(1)
-    month = calendar.month_name[int(regex.group(2))]
-    day = regex.group(3)
-    time = regex.group(4)
-    return "{} {} {} at {}".format(day, month, year, time)
-    # 13 October 2017 at 21:45
 
 def getPicture(zid):
     if os.path.exists(os.path.join(students_dir, zid, "img.jpg")):
