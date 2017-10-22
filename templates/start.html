@@ -41,6 +41,13 @@
     	  	View Comments
 		  </button>
 		 {% endif %} 
+		 {% if post.zid == my_id %}
+    	<form action="{{ url_for('deletepost')}}" method="POST">
+    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+		 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+		</form>
+		 {% endif %}
 		</form>
 		<div class="collapse" id="{{post.hsh}}">
 		{% for comment in post.comments %}

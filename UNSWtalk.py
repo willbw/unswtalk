@@ -437,6 +437,14 @@ def newreply():
         s[post_zid].refreshPosts()
         return redirect(url_for('start'))
 
+@app.route('/deltepost', methods=['GET','POST'])
+def deletepost():
+    # We get the post ID passed back from the user
+    # we just need to delete the post file
+    # rename any subsequent files to be n-1 so they will be sequestial
+    # then we are done
+    return redirect(url_for('start'))
+
 @app.route('/logout', methods=['GET','POST'])
 def logout():
     resp = make_response(render_template("logout.html"))
