@@ -5,7 +5,7 @@
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
-import os, re, calendar
+import os, re, calendar, datetime
 from datetime import date
 from flask import Flask, render_template, session, request, make_response
 
@@ -75,7 +75,8 @@ def user(zid=None):
     # POSTS
     posts = []
     post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
-    post_filenames = [x for x in post_filenames if re.match('[0-9].txt', x)]
+    post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
+    post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
     post_fields = ['time', 'from', 'msg']
     for file in post_filenames:
         file = os.path.join(students_dir, student_to_show, file)
@@ -165,6 +166,25 @@ def login():
                 resp.set_cookie('user_name', name)
                 return resp 
         return 'Failed Login'
+
+@app.route('/newpost', methods=['GET','POST'])
+def newpost():
+    if request.method == 'POST':
+        student = request.cookies.get('user_id') 
+        post_filenames = sorted(os.listdir(os.path.join(students_dir, student)), reverse=True)
+        post_filenames = [int(x.replace('.txt','')) for x in post_filenames if re.match('[0-9]+.txt', x)]
+        newpost_filename = str(max(post_filenames)+1)+'.txt'
+        print(newpost_filename)
+        post = request.form['post']
+        # post = post.replace('\n', '<br/>')
+        post = post.replace('\n', '\\n')
+        with open(os.path.join(students_dir, student, newpost_filename), 'w') as f:
+            f.write('time: '+ datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
+            f.write('from: '+student+'\n')
+            f.write('longitude: 150.3226\n')
+            f.write('latitude: -33.7140\n')
+            f.write('message: '+post)
+        return post
 
 @app.route('/logout', methods=['GET','POST'])
 def logout():
