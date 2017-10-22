@@ -7,7 +7,7 @@
 
 import os, re, calendar
 from datetime import date, datetime
-from flask import Flask, render_template, session, request, make_response, redirect
+from flask import Flask, render_template, session, request, make_response, redirect, url_for
 
 students_dir = "dataset-medium";
 
@@ -385,7 +385,7 @@ def newpost():
             f.write('latitude: -33.7140\n')
             f.write('message: '+post)
         s[student].refreshPosts()
-        return redirect('/')
+        return redirect(url_for('/'))
 
 @app.route('/newcomment', methods=['GET','POST'])
 def newcomment():
