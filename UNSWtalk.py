@@ -41,9 +41,10 @@ def getDate(date):
     # 13 October 2017 at 21:45
 
 class Post:
-    def __init__(self, file, post_id, zid=None, message=None, fmessage=None, comments=None, time=None, dtime=None, related_to=None, hsh=None):
+    def __init__(self, file, post_id, zid=None, message=None, fmessage=None, comments=None, num_comments=0, time=None, dtime=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
+        self.num_comments = num_comments
         with open(self.file, 'r', encoding='utf8') as f:
             # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
             for line in f:
@@ -71,12 +72,13 @@ class Post:
         comment_filenames = os.listdir(os.path.join(students_dir, self.zid))
         my_regex = self.post_id + r"-[0-9]+.txt"
         comment_filenames = [x for x in comment_filenames if re.match(my_regex, x)]
-        comment_filenames.sort(key=self.sortComments)
+        comment_filenames.sort(key=self.sortComments, reverse=True)
         for comment_id in comment_filenames:
             file = os.path.join(students_dir, self.zid, comment_id) 
             comments.append(Comment(file, self.zid, comment_id[:-4]))
         self.comments = comments
         for comment in self.comments:
+            self.num_comments += 1
             self.related_to += comment.related_to
         # Add in related to for comments to the main post.
 
@@ -86,11 +88,12 @@ class Post:
 
 
 class Comment:
-    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, replies=None, time=None, related_to=None, hsh=None):
+    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, replies=None, num_replies=0, time=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         self.parent_zid = parent_zid
         self.message = ''
+        self.num_replies = num_replies
         with open(self.file, 'r', encoding='utf8') as f:
             # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
             for line in f:
@@ -115,12 +118,13 @@ class Comment:
         reply_filenames = os.listdir(os.path.join(students_dir, self.parent_zid))
         my_regex = self.post_id + r"-[0-9]+.txt"
         reply_filenames = [x for x in reply_filenames if re.match(my_regex, x)]
-        reply_filenames.sort(key=self.sortReplies)
+        reply_filenames.sort(key=self.sortReplies, reverse=True)
         for reply_id in reply_filenames:
             file = os.path.join(students_dir, self.parent_zid, reply_id) 
             replies.append(Reply(file, self.parent_zid, reply_id[:-4]))
         self.replies = replies
         for reply in replies:
+            self.num_replies += 1
             self.related_to += reply.related_to + [self.zid]
         # Add in related to for comments to the main post.
 
@@ -388,8 +392,15 @@ def newcomment():
     if request.method == 'POST':
         student = request.cookies.get('user_id') 
         post_zid = request.form['post_zid']
+        post_id = request.form['post_id']
         message = request.form['comment']
-        print(post_zid, message)
+        num_comments = s[post_zid].posts[int(post_id)].num_comments
+        newcomment_filename = post_id + '-' + str(num_comments) + '.txt'
+        with open(os.path.join(students_dir, post_zid, newcomment_filename), 'w') as f:
+            f.write('time: '+ datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
+            f.write('from: '+student+'\n')
+            f.write('message: '+message)
+        s[post_zid].refreshPosts()
         return redirect('/')
 
 @app.route('/logout', methods=['GET','POST'])
@@ -408,16 +419,12 @@ def getName(zid):
                 name = line[len('full_name')+2:] 
                 return name
 
-
 def getPicture(zid):
     if os.path.exists(os.path.join(students_dir, zid, "img.jpg")):
         picture = os.path.join(students_dir, zid, "img.jpg") 
     else:
         picture = os.path.join("egg.gif")
     return picture
-
-
-
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
