@@ -385,7 +385,7 @@ def newpost():
             f.write('latitude: -33.7140\n')
             f.write('message: '+post)
         s[student].refreshPosts()
-        return redirect(url_for('/'))
+        return redirect(url_for('start'))
 
 @app.route('/newcomment', methods=['GET','POST'])
 def newcomment():
@@ -401,7 +401,7 @@ def newcomment():
             f.write('from: '+student+'\n')
             f.write('message: '+message)
         s[post_zid].refreshPosts()
-        return redirect('/')
+        return redirect(url_for('start'))
 
 @app.route('/logout', methods=['GET','POST'])
 def logout():
