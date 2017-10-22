@@ -31,8 +31,48 @@ fields = ['birthday',
           'zid']
 
 class Post:
-    def __init__(self, file, zid=None, post_id=None, message=None, comments=None, time=None, related_to=None):
+    def __init__(self, file, post_id, zid=None, message=None, comments=None, time=None, related_to=None):
         self.file = file
+        self.post_id = post_id
+        with open(self.file, 'r', encoding='utf8') as f:
+            # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
+            for line in f:
+                line = line.rstrip()
+                line = line.replace('\\n', '<br/>')
+                if line.startswith('from'):
+                    self.zid = line[len('from')+2: ]
+                elif line.startswith('time'):
+                    self.time = getDate(line[len('time')+2: ])
+                elif line.startswith('message'):
+                    self.message = line[len('message')+2: ]
+        self.related_to = re.findall('z[0-9]{7}', self.message) + [self.zid]
+        self.getComments() 
+
+    def getComments(self):
+        comments = []
+        comment_filenames = os.listdir(os.path.join(students_dir, self.zid))
+        my_regex = self.post_id + r"-[0-9]+.txt"
+        comment_filenames = [x for x in comment_filenames if re.match(my_regex, x)]
+        comment_filenames.sort(key=self.sortComments)
+        for comment_id in comment_filenames:
+            file = os.path.join(students_dir, self.zid, comment_id) 
+            comments.append(Comment(file, self.zid, comment_id[:-4]))
+        self.comments = comments
+        for comment in self.comments:
+            self.related_to += comment.related_to
+        # Add in related to for comments to the main post.
+
+    def sortComments(self, filename):
+        match = re.match('.*-([0-9]+).txt', filename)
+        return int(match.group(1))
+
+
+class Comment:
+    def __init__(self, file, parent_zid, post_id, zid=None, message=None, replies=None, time=None, related_to=None):
+        self.file = file
+        self.post_id = post_id
+        self.parent_zid = parent_zid
+        self.message = ''
         with open(self.file, 'r', encoding='utf8') as f:
             # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
             for line in f:
@@ -45,6 +85,44 @@ class Post:
                 elif line.startswith('message'):
                     self.message = line[len('message')+2: ]
         self.related_to = re.findall('z[0-9]{7}', self.message)
+        self.getReplies() 
+
+    def getReplies(self):
+        replies = []
+        reply_filenames = os.listdir(os.path.join(students_dir, self.parent_zid))
+        my_regex = self.post_id + r"-[0-9]+.txt"
+        reply_filenames = [x for x in reply_filenames if re.match(my_regex, x)]
+        reply_filenames.sort(key=self.sortReplies)
+        for reply_id in reply_filenames:
+            file = os.path.join(students_dir, self.parent_zid, reply_id) 
+            replies.append(Reply(file, self.parent_zid, reply_id[:-4]))
+        self.replies = replies
+        for reply in replies:
+            self.related_to += reply.related_to + [self.zid]
+        # Add in related to for comments to the main post.
+
+    def sortReplies(self, filename):
+        match = re.match('.*-.*-([0-9]+).txt', filename)
+        return int(match.group(1))
+
+class Reply:
+    def __init__(self, file, parent_zid, post_id, zid=None, message=None, time=None, related_to=None):
+        self.file = file
+        self.post_id = post_id
+        self.parent_zid = parent_zid
+        self.message = ''
+        with open(self.file, 'r', encoding='utf8') as f:
+            # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
+            for line in f:
+                line = line.rstrip()
+                line = line.replace('\\n', '<br/>')
+                if line.startswith('from'):
+                    self.zid = line[len('from')+2: ]
+                elif line.startswith('time'):
+                    self.time = getDate(line[len('time')+2: ])
+                elif line.startswith('message'):
+                    self.message = line[len('message')+2: ]
+        self.related_to = re.findall('z[0-9]{7}', self.message) + [self.zid]
 
 class Student:
     def __init__(self, zid,
@@ -74,9 +152,19 @@ class Student:
                         break
         details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
         details['age'] = int(details['age'].days // 365.25)
+        
         # FRIEND LIST
         details['friends'] = re.sub(r'[\(\)]','', details['friends'])
         details['friends'] = details['friends'].split(', ')
+
+        # Posts 
+        posts = []
+        post_filenames = sorted(os.listdir(os.path.join(students_dir, self.zid)), reverse=True)
+        post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
+        post_filenames.sort(key = lambda x: int(x.split('.')[0]))
+        for post_id in post_filenames:
+            file = os.path.join(students_dir, self.zid, post_id)
+            posts.append(Post(file, post_id[:-4]))
 
         self.age = details['age']
         self.birthday = details['birthday']
@@ -89,7 +177,17 @@ class Student:
         self.home_suburb = details['home_suburb']
         self.password = details['password']
         self.picture = details['picture']
+        self.posts = posts
         self.program = details['program']
+
+    def getPosts(self):
+        my_related - []
+        for key, student in s.items():
+            for post in student.posts:
+                if self.zid in post.related_to:
+                    my_related.append(post)
+        return my_related
+
 
 def updateStudentList():
     for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
