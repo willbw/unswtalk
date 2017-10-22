@@ -176,8 +176,8 @@ def newpost():
         newpost_filename = str(max(post_filenames)+1)+'.txt'
         print(newpost_filename)
         post = request.form['post']
-        # post = post.replace('\n', '<br/>')
-        post = post.replace('\n', '\\n')
+        post = post.replace('\r', '')
+        post = post.replace('\n', '<br/>')
         with open(os.path.join(students_dir, student, newpost_filename), 'w') as f:
             f.write('time: '+ datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
             f.write('from: '+student+'\n')
