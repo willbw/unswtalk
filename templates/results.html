@@ -2,14 +2,52 @@
 
 {% block body_contents %}
 
-<ul class="list-group">
-<li class="list-group-item">Search Results</li> 
-{% for value in result %}
-    <li class="list-group-item">
-    <img src="{{url_for('static',filename=value[2])}}" class="rounded-circle" height="35" width="35">
-    <a href="{{url_for('user', zid=value[0])}}">{{ value[1] }}</a>
-    </li>
-{% endfor %}
-</ul>
 
+<div class="row mx-auto style="width: 200px;">
+	<h2>Search Results</h2>
+</div>
+<div class="jumbotron">
+<div class="row">
+	<div class="col-sm-4">
+		<h4>People</h4>
+		<ul class="list-group">
+			{% if not people %}
+				No results :(
+			{% endif %}
+			{% for p in people %}
+			    <li class="list-group-item">
+			    <img src="{{url_for('static',filename=s[p].picture)}}" class="rounded-circle" height="35" width="35">
+			    <a href="{{url_for('user', zid=p)}}">{{ s[p].full_name }}</a>
+			    </li>
+			{% endfor %}
+		</ul>
+	</div>
+	<div class="col-sm-4">
+		<h4>Posts</h4>
+		<ul class="list-group">
+			{% if not posts %}
+				No results :(
+			{% endif %}
+			{% for p in posts %}
+			    <li class="list-group-item">
+			    	{{ p.fmessage|safe }}
+			    </li>
+			{% endfor %}
+		</ul>
+	</div>
+	<div class="col-sm-4">
+		<h4>Comments</h4>
+		<ul class="list-group">
+			{% if not comments %}
+				No results :(
+			{% endif %}
+			{% for c in comments %}
+			    <li class="list-group-item">
+			    	{{ c.fmessage|safe }}
+			    </li>
+			{% endfor %}
+		</ul>
+	</div>
+</div>
+</div>
 {% endblock %}

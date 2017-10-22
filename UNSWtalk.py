@@ -325,9 +325,24 @@ def user(zid=None):
 def results():
     if request.method == 'POST':
         query = request.form['query']
-        students = sorted(os.listdir(students_dir))
-        students = [x for x in students if not x.startswith('.')]
-        result = []
+        people = []
+        posts = []
+        comments = []
+        replies = []
+
+        for k, v in s.items():
+            if query.lower() in v.full_name.lower():
+                people.append(k)
+            for p in v.posts:
+                if query in p.fmessage:
+                    posts.append(p)
+                for c in p.comments:
+                    if query in c.fmessage:
+                        comments.append(c)
+                    for r in c.replies:
+                        if query in r.fmessage:
+                            replies.append(r)
+
         # for student_to_show in students:
         #     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
         #     with open(details_filename) as f:
@@ -341,7 +356,7 @@ def results():
         #             pic = os.path.join(students_dir, student_to_show, "img.jpg") 
         #         else: pic = os.path.join("egg.gif")
         #         result.append((student_to_show, name, pic))
-        return render_template("results.html", result = result)
+        return render_template("results.html", s=s, people=people, posts=posts, comments=comments, replies=replies) 
     # students = sorted(os.listdir(students_dir))
     # students = [x for x in students if not x.startswith('.')]
     # student_to_show = students[n % len(students)]
