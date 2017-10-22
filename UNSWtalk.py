@@ -30,14 +30,29 @@ fields = ['birthday',
           'program',
           'zid']
 
-# OOP
+class Post:
+    def __init__(self, file, zid=None, post_id=None, message=None, comments=None, time=None, related_to=None):
+        self.file = file
+        with open(self.file, 'r', encoding='utf8') as f:
+            # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
+            for line in f:
+                line = line.rstrip()
+                line = line.replace('\\n', '<br/>')
+                if line.startswith('from'):
+                    self.zid = line[len('from')+2: ]
+                elif line.startswith('time'):
+                    self.time = getDate(line[len('time')+2: ])
+                elif line.startswith('message'):
+                    self.message = line[len('message')+2: ]
+        self.related_to = re.findall('z[0-9]{7}', self.message)
+
 class Student:
     def __init__(self, zid,
                  age=None, birthday=None, courses=None,
                  email=None, friends=None, full_name=None, 
                  home_latitude=None, home_longitude=None, 
                  home_suburb=None, password=None, picture=None,
-                 program=None):
+                 posts=None, program=None):
         self.zid = zid
         self.refresh()
 
@@ -76,11 +91,17 @@ class Student:
         self.picture = details['picture']
         self.program = details['program']
 
+def updateStudentList():
+    for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
+        if not zid in s:
+            s[zid] = Student(zid)
+        else:
+            s[zid].refresh()
+
 # Dictionary in which to store all out of our students
 # store all of the students info as objects in our dictionary
 s = {}
-for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
-    s[zid] = Student(zid)
+updateStudentList()
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
@@ -149,32 +170,6 @@ def user(zid=None):
         student_to_show = request.cookies.get('user_id') 
     else: 
         student_to_show = zid
-    # details = {}
-    # details_filename = os.path.join(students_dir, student_to_show, "student.txt")
-
-    # # USER DETAILS
-    # if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-    #     details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
-    # else: details['picture'] = os.path.join("egg.gif")
-    # with open(details_filename) as f:
-    #     for line in f:
-    #         line = line.rstrip()
-    #         for field in fields:
-    #             if line.startswith(field):
-    #                 details[field] = line[len(field)+2:] 
-    #                 break
-    # details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
-    # details['age'] = int(details['age'].days // 365.25)
-
-    # # FRIEND LIST
-    # details['friends'] = re.sub(r'[\(\)]','', details['friends'])
-    # details['friends'] = details['friends'].split(', ')
-    # for i, friend in enumerate(details['friends']):
-    #     details_filename = os.path.join(students_dir, friend, "student.txt")
-    #     if os.path.exists(os.path.join(students_dir, friend, "img.jpg")):
-    #         friendpic = os.path.join(students_dir, friend, "img.jpg") 
-    #     else: friendpic = os.path.join("egg.gif")
-    #     details['friends'][i] = [friend, getName(friend), friendpic] 
     session['n'] = n + 1
     return render_template('profile.html', students_dir=students_dir, s=s, student=student_to_show) 
 
@@ -185,19 +180,19 @@ def results():
         students = sorted(os.listdir(students_dir))
         students = [x for x in students if not x.startswith('.')]
         result = []
-        for student_to_show in students:
-            details_filename = os.path.join(students_dir, student_to_show, "student.txt")
-            with open(details_filename) as f:
-                for line in f:
-                    line = line.rstrip()
-                    if line.startswith('full_name'):
-                        name = line[len('full_name')+2:] 
-                        break
-            if query.lower() in name.lower():
-                if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-                    pic = os.path.join(students_dir, student_to_show, "img.jpg") 
-                else: pic = os.path.join("egg.gif")
-                result.append((student_to_show, name, pic))
+        # for student_to_show in students:
+        #     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+        #     with open(details_filename) as f:
+        #         for line in f:
+        #             line = line.rstrip()
+        #             if line.startswith('full_name'):
+        #                 name = line[len('full_name')+2:] 
+        #                 break
+        #     if query.lower() in name.lower():
+        #         if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
+        #             pic = os.path.join(students_dir, student_to_show, "img.jpg") 
+        #         else: pic = os.path.join("egg.gif")
+        #         result.append((student_to_show, name, pic))
         return render_template("results.html", result = result)
     # students = sorted(os.listdir(students_dir))
     # students = [x for x in students if not x.startswith('.')]
@@ -252,6 +247,8 @@ def logout():
     resp.set_cookie('user_id', '', expires=0)
     resp.set_cookie('user_name', '', expires=0)
     return resp
+
+
 
 def getName(zid):
     details_filename = os.path.join(students_dir, zid, "student.txt")
