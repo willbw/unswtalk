@@ -27,12 +27,15 @@
             <li class="nav-item">
                 <a class="nav-link">Welcome {{ my_name }}</a>
             </li>
+        </ul>
         <form class="form-inline my-2 my-lg-0" action="{{ url_for('results') }}" method="POST">
           <input class="form-control mr-sm-2" type="text" name="query" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
-        </ul>
           <ul class="nav navbar-nav ml-auto justify-content-end">
+          <li class="nav-item active">
+            <a class="nav-link" href="{{url_for('start', zid=my_id)}}">News Feed<span class="sr-only">(current)</span></a>
+          </li>
           <li class="nav-item active">
             <a class="nav-link" href="{{url_for('user', zid=my_id)}}">My Profile<span class="sr-only">(current)</span></a>
           </li>

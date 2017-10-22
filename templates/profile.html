@@ -1,50 +1,55 @@
 {% extends "base.html" %}
 
 {% block body_contents %}
-<div class="row">
-	<div class="col-sm-12" style="background-color:yellow;">
-		<h2>{{full_name}}</h2>
-		<form method="POST" action="">
-		    <input type="hidden" name="n" value="7">
-		    <input type="submit" value="Next student" class="unswtalk_button">
-		</form>
-	</div>
+<div class="jumbotron">
+<div class="row mb-4">
+	<div class="col-sm-12"> 
+		<h3>{{ s[student].full_name }}</h3>
+ 	</div>
 </div>
-<div class="row">
-	<div class="col-sm-3">	
-		<img src="{{url_for('static',filename=picture)}}" class="img-thumbnail"></img>
+<div class="row mb-3">
+	<div class="col-md-3">	
+		<img src="{{url_for('static',filename=s[student].picture)}}" width=200px height=200px></img>
 	</div>
-	<div class="col-sm-9" style="background-color:pink;">	
-		<table class="table">
+	<div class="col-md-9">	
+		<table class="table ml-1 table-sm">
 			<tbody>
 				<tr>
 					<td>zID</td>
-					<td>{{zid}}</td>
+					<td>{{ s[student].zid }}</td>
+				</tr>
+				<tr>
+					<td>Age</td>
+					<td>{{ s[student].age }}</td>
 				</tr>
 				<tr>
 					<td>Birthday</td>
-					<td>{{birthday}}</td>
+					<td>{{ s[student].birthday }}</td>
 				</tr>
 				<tr>
 					<td>Program</td>
-					<td>{{program}}</td>
+					<td>{{ s[student].program }}</td>
 				</tr>
 				<tr>
 					<td>Suburb</td>
-					<td>{{home_suburb}}</td>
+					<td>{{ s[student].home_suburb }}</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
 </div>
 <div class="row">
-	<div class="col-sm-3">
-		{% for friend in friends %}
-		<p> {{ friend }} </p>
-		{% endfor %}
-	</div>
+	<div class="col-sm-12">
+    		{% for friend_row in s[student].friends | batch(4) %}
+    		<div class="row">
+    			{% for friend in friend_row %}
+    			<div class="col-sm-3 mb-2">
+	                <img src="{{url_for('static',filename=s[friend].picture)}}" class="rounded-circle" height="35" width="35">
+	        		<a href="{{url_for('user', zid=s[friend].zid)}}">{{ s[friend].full_name }}</a>
+	            </div>
+                {% endfor %}
+            </div>
+    		{% endfor %}
+        </div>
 </div>
-
-<div>
-	</div>
 {% endblock %}

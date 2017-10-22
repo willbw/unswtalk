@@ -7,7 +7,7 @@
 
 import os, re, calendar, datetime
 from datetime import date
-from flask import Flask, render_template, session, request, make_response
+from flask import Flask, render_template, session, request, make_response, redirect
 
 students_dir = "dataset-medium";
 
@@ -30,8 +30,89 @@ fields = ['birthday',
           'program',
           'zid']
 
+# OOP
+class Student:
+    def __init__(self, zid,
+                 age=None, birthday=None, courses=None,
+                 email=None, friends=None, full_name=None, 
+                 home_latitude=None, home_longitude=None, 
+                 home_suburb=None, password=None, picture=None,
+                 program=None):
+        self.zid = zid
+        self.refresh()
+
+    def refresh(self):
+        details = {}
+        for field in fields:
+            details[field] = ''
+        details_filename = os.path.join(students_dir, self.zid, "student.txt")
+        # USER DETAILS
+        if os.path.exists(os.path.join(students_dir, self.zid, "img.jpg")):
+            details['picture'] = os.path.join(students_dir, self.zid, "img.jpg") 
+        else: details['picture'] = os.path.join("egg.gif")
+        with open(details_filename) as f:
+            for line in f:
+                line = line.rstrip()
+                for field in fields:
+                    if line.startswith(field):
+                        details[field] = line[len(field)+2:] 
+                        break
+        details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
+        details['age'] = int(details['age'].days // 365.25)
+        # FRIEND LIST
+        details['friends'] = re.sub(r'[\(\)]','', details['friends'])
+        details['friends'] = details['friends'].split(', ')
+
+        self.age = details['age']
+        self.birthday = details['birthday']
+        self.courses = details['courses']
+        self.email = details['email']
+        self.friends = details['friends']
+        self.full_name = details['full_name']
+        self.home_latitude = details['home_latitude']
+        self.home_longitude = details['home_longitude']
+        self.home_suburb = details['home_suburb']
+        self.password = details['password']
+        self.picture = details['picture']
+        self.program = details['program']
+
+# Dictionary in which to store all out of our students
+# store all of the students info as objects in our dictionary
+s = {}
+for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
+    s[zid] = Student(zid)
+
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
+def start():
+    #posts
+    post_id = 0
+    student_to_show = request.cookies.get('user_id') 
+    posts = []
+    post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
+    post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
+    post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
+    post_fields = ['time', 'from', 'msg']
+    for file in post_filenames:
+        print("FILE:",file)
+        file = os.path.join(students_dir, student_to_show, file)
+        with open(file, 'r', encoding='utf8') as f:
+            # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
+            posts.append(['','','', str(post_id), '', '', []])
+            for line in f:
+                line = line.rstrip()
+                line = line.replace('\\n', '<br/>')
+                if line.startswith('from'):
+                    posts[-1][0] = getName(line[len('from')+2: ])
+                    posts[-1][4] = getPicture(line[len('from')+2: ])
+                    posts[-1][5] = line[len('from')+2: ]
+                elif line.startswith('time'):
+                    posts[-1][1] = getDate(line[len('time')+2: ])
+                elif line.startswith('message'):
+                    posts[-1][2] = line[len('message')+2: ]
+        post_id += 1
+    return render_template('start.html', curr_zid=student_to_show, posts=posts) 
+
 # def start(zid = None):
 #     n = session.get('n', 0)
 #     students = sorted(os.listdir(students_dir))
@@ -68,55 +149,34 @@ def user(zid=None):
         student_to_show = request.cookies.get('user_id') 
     else: 
         student_to_show = zid
-    details = {}
-    details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+    # details = {}
+    # details_filename = os.path.join(students_dir, student_to_show, "student.txt")
 
+    # # USER DETAILS
+    # if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
+    #     details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
+    # else: details['picture'] = os.path.join("egg.gif")
+    # with open(details_filename) as f:
+    #     for line in f:
+    #         line = line.rstrip()
+    #         for field in fields:
+    #             if line.startswith(field):
+    #                 details[field] = line[len(field)+2:] 
+    #                 break
+    # details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
+    # details['age'] = int(details['age'].days // 365.25)
 
-    # POSTS
-    posts = []
-    post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
-    post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
-    post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
-    post_fields = ['time', 'from', 'msg']
-    for file in post_filenames:
-        file = os.path.join(students_dir, student_to_show, file)
-        with open(file, 'r', encoding='utf8') as f:
-            posts.append(['','',''])
-            for line in f:
-                line = line.rstrip()
-                line = line.replace('\\n', '<br/>')
-                if line.startswith('from'):
-                    posts[-1][0] = getName(line[len('from')+2: ])
-                elif line.startswith('time'):
-                    posts[-1][1] = getDate(line[len('time')+2: ])
-                elif line.startswith('message'):
-                    posts[-1][2] = line[len('message')+2: ]
-
-    # USER DETAILS
-    if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-        details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
-    else: details['picture'] = os.path.join("egg.gif")
-    with open(details_filename) as f:
-        for line in f:
-            line = line.rstrip()
-            for field in fields:
-                if line.startswith(field):
-                    details[field] = line[len(field)+2:] 
-                    break
-    details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
-    details['age'] = int(details['age'].days // 365.25)
-
-    # FRIEND LIST
-    details['friends'] = re.sub(r'[\(\)]','', details['friends'])
-    details['friends'] = details['friends'].split(', ')
-    for i, friend in enumerate(details['friends']):
-        details_filename = os.path.join(students_dir, friend, "student.txt")
-        if os.path.exists(os.path.join(students_dir, friend, "img.jpg")):
-            friendpic = os.path.join(students_dir, friend, "img.jpg") 
-        else: friendpic = os.path.join("egg.gif")
-        details['friends'][i] = [friend, getName(friend), friendpic] 
+    # # FRIEND LIST
+    # details['friends'] = re.sub(r'[\(\)]','', details['friends'])
+    # details['friends'] = details['friends'].split(', ')
+    # for i, friend in enumerate(details['friends']):
+    #     details_filename = os.path.join(students_dir, friend, "student.txt")
+    #     if os.path.exists(os.path.join(students_dir, friend, "img.jpg")):
+    #         friendpic = os.path.join(students_dir, friend, "img.jpg") 
+    #     else: friendpic = os.path.join("egg.gif")
+    #     details['friends'][i] = [friend, getName(friend), friendpic] 
     session['n'] = n + 1
-    return render_template('start.html', **details, students_dir=students_dir, curr_zid=student_to_show, posts=posts) 
+    return render_template('profile.html', students_dir=students_dir, s=s, student=student_to_show) 
 
 @app.route('/results', methods=['GET','POST'])
 def results():
@@ -184,7 +244,7 @@ def newpost():
             f.write('longitude: 150.3226\n')
             f.write('latitude: -33.7140\n')
             f.write('message: '+post)
-        return post
+        return redirect('/')
 
 @app.route('/logout', methods=['GET','POST'])
 def logout():
@@ -210,8 +270,16 @@ def getDate(date):
     day = regex.group(3)
     time = regex.group(4)
     return "{} {} {} at {}".format(day, month, year, time)
-
     # 13 October 2017 at 21:45
+
+def getPicture(zid):
+    if os.path.exists(os.path.join(students_dir, zid, "img.jpg")):
+        picture = os.path.join(students_dir, zid, "img.jpg") 
+    else:
+        picture = os.path.join("egg.gif")
+    return picture
+
+
 
 
 if __name__ == '__main__':
