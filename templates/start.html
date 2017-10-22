@@ -8,7 +8,7 @@
 		  <h4 class="card-header">What's on your mind?</h4>
 		  <div class="card-body"> 
 		  	<form action="{{ url_for('newpost') }}" method="POST">
-    		<textarea class="form-control" rows="5" id="post" name="post"></textarea>
+    		<textarea class="form-control" rows="5" id="message" name="message"></textarea>
     		<div class="text-right">
         		<button class="btn btn-success mt-3" type="submit">Post</button>
         	</div>
@@ -19,30 +19,54 @@
 </div>
 </div>
 <div class="container">
-	{% if posts %}
 	{% for post in posts %}
 	<div class="row">
 	<div class="col">
 		<div class="card mb-3 p-3">
     	<!-- <h5>{{ post[0]|safe }}</h5> -->
-    	<p>
-	        <img src="{{url_for('static',filename=post[4])}}" class="rounded-circle" height="35" width="35">
-			<a href="{{url_for('user', zid=post[5])}}">{{ post[0] }}</a>
-		</p>
-    	<h6>{{ post[1]|safe }}</h6>
-    	<p>{{ post[2]|safe }}</p>
-    	  <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#comment{{ post[3] }}" aria-expanded="false" aria-controls="comment{{ post[3] }}">
+    	<div class="card-body">
+    	<h5>
+	        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+			<a href="{{url_for('user', zid=post.zid)}}" class="text-dark ml-1">{{ s[post.zid].full_name }}</a>
+		</h5>
+    	<p class="text-muted">{{ post.time|safe }}</p>
+    	<p>{{ post.fmessage|safe }}</p>
+    	<form action="{{ url_for('newcomment')}}" method="POST">
+    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+		 <input class="form-control form-control-sm mb-2" type="text" name="comment" id="comment" placeholder="Write a comment...">
+		 <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+		</form>
+    	{% if post.comments %}
+    	  <button class="btn btn-outline-success btn-sm" type="button" data-toggle="collapse" data-target="#{{post.hsh}}" aria-expanded="false" aria-controls="comment{{post.hsh}}">
     	  	View Comments
 		  </button>
-		<div class="collapse" id="comment{{ post[3] }}">
-		  <div class="card card-body">
-		    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+		 {% endif %} 
+		<div class="collapse" id="{{post.hsh}}">
+		{% for comment in post.comments %}
+		  <div class="card ml-1 mt-2 card-body bg-light">
+	    	<p class="text-muted">
+		        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+				<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[comment.zid].full_name }}</a>
+				{{ comment.time|safe }}
+			</p>
+	    	<p>{{ comment.fmessage|safe }}</p>
+			{% for reply in comment.replies %}
+			  <div class="card ml-2 mt-2 card-body bg-light">
+		    	<p class="text-muted">
+			        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+					<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[reply.zid].full_name }}</a>
+					{{ reply.time|safe }}
+				</p>
+		    	<p>{{ reply.fmessage|safe }}</p>
+			  </div>
+			  {% endfor %}
 		  </div>
+		  {% endfor %}
 		</div>
+	</div>
 	    </div>
     </div>
 	</div>
 	{% endfor %}
-	{% endif %}
 </div>
 {% endblock %}

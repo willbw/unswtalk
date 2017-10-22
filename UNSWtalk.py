@@ -5,8 +5,8 @@
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
-import os, re, calendar, datetime
-from datetime import date
+import os, re, calendar
+from datetime import date, datetime
 from flask import Flask, render_template, session, request, make_response, redirect
 
 students_dir = "dataset-medium";
@@ -41,7 +41,7 @@ def getDate(date):
     # 13 October 2017 at 21:45
 
 class Post:
-    def __init__(self, file, post_id, zid=None, message=None, comments=None, time=None, related_to=None):
+    def __init__(self, file, post_id, zid=None, message=None, fmessage=None, comments=None, time=None, dtime=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         with open(self.file, 'r', encoding='utf8') as f:
@@ -52,10 +52,18 @@ class Post:
                 if line.startswith('from'):
                     self.zid = line[len('from')+2: ]
                 elif line.startswith('time'):
+                    regex = '.*([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+([0-9]{4})'
+                    r = re.match(regex, line)
+                    self.dtime = datetime(int(r.group(1)), int(r.group(2)), int(r.group(3)), int(r.group(4)), int(r.group(5)), int(r.group(6)))
                     self.time = getDate(line[len('time')+2: ])
                 elif line.startswith('message'):
                     self.message = line[len('message')+2: ]
+        self.fmessage = self.message
+        if re.match('.*z[0-9]{7}.*', self.fmessage):
+            for k, v in s.items():
+                self.fmessage = self.fmessage.replace(k,'<a href="/user/'+k+'">'+v.full_name+'</a>')
         self.related_to = re.findall('z[0-9]{7}', self.message) + [self.zid]
+        self.hsh = hash(file)
         self.getComments() 
 
     def getComments(self):
@@ -78,7 +86,7 @@ class Post:
 
 
 class Comment:
-    def __init__(self, file, parent_zid, post_id, zid=None, message=None, replies=None, time=None, related_to=None):
+    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, replies=None, time=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         self.parent_zid = parent_zid
@@ -94,7 +102,12 @@ class Comment:
                     self.time = getDate(line[len('time')+2: ])
                 elif line.startswith('message'):
                     self.message = line[len('message')+2: ]
+        self.fmessage = self.message
+        if re.match('.*z[0-9]{7}.*', self.fmessage):
+            for k, v in s.items():
+                self.fmessage = self.fmessage.replace(k,'<a href="/user/'+k+'">'+v.full_name+'</a>')
         self.related_to = re.findall('z[0-9]{7}', self.message)
+        self.hsh = hash(file)
         self.getReplies() 
 
     def getReplies(self):
@@ -116,7 +129,7 @@ class Comment:
         return int(match.group(1))
 
 class Reply:
-    def __init__(self, file, parent_zid, post_id, zid=None, message=None, time=None, related_to=None):
+    def __init__(self, file, parent_zid, post_id, zid=None, message=None, fmessage=None, time=None, related_to=None, hsh=None):
         self.file = file
         self.post_id = post_id
         self.parent_zid = parent_zid
@@ -132,7 +145,12 @@ class Reply:
                     self.time = getDate(line[len('time')+2: ])
                 elif line.startswith('message'):
                     self.message = line[len('message')+2: ]
+        self.fmessage = self.message
+        if re.match('.*z[0-9]{7}.*', self.fmessage):
+            for k, v in s.items():
+                self.fmessage = self.fmessage.replace(k,'<a href="/user/'+k+'">'+v.full_name+'</a>')
         self.related_to = re.findall('z[0-9]{7}', self.message) + [self.zid]
+        self.hsh = hash(file)
 
 class Student:
     def __init__(self, zid,
@@ -167,15 +185,6 @@ class Student:
         details['friends'] = re.sub(r'[\(\)]','', details['friends'])
         details['friends'] = details['friends'].split(', ')
 
-        # Posts 
-        posts = []
-        post_filenames = sorted(os.listdir(os.path.join(students_dir, self.zid)), reverse=True)
-        post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
-        post_filenames.sort(key = lambda x: int(x.split('.')[0]))
-        for post_id in post_filenames:
-            file = os.path.join(students_dir, self.zid, post_id)
-            posts.append(Post(file, post_id[:-4]))
-
         self.age = details['age']
         self.birthday = details['birthday']
         self.courses = details['courses']
@@ -187,18 +196,26 @@ class Student:
         self.home_suburb = details['home_suburb']
         self.password = details['password']
         self.picture = details['picture']
-        self.posts = posts
         self.program = details['program']
+
+    def refreshPosts(self):
+        # Posts 
+        posts = []
+        post_filenames = sorted(os.listdir(os.path.join(students_dir, self.zid)), reverse=True)
+        post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
+        post_filenames.sort(key = lambda x: int(x.split('.')[0]))
+        for post_id in post_filenames:
+            file = os.path.join(students_dir, self.zid, post_id)
+            posts.append(Post(file, post_id[:-4]))
+        self.posts = posts
 
     def getPosts(self):
         my_related = []
         for key, student in s.items():
-            student.refresh()
             for post in student.posts:
                 if self.zid in post.related_to:
                     my_related.append(post)
         return my_related
-
 
 def updateStudentList():
     for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
@@ -211,21 +228,27 @@ def updateStudentList():
 # store all of the students info as objects in our dictionary
 s = {}
 updateStudentList()
+for k, v in s.items():
+    v.refreshPosts()
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
 def start():
     #posts
-    post_id = 0
+    # post_id = 0
     student_to_show = request.cookies.get('user_id') 
-
+    if not student_to_show:
+        return render_template('start.html')
     related_posts = s[student_to_show].getPosts()
-    for p in related_posts:
-        print(s[p.zid].full_name, p.time, p.message)
-        for c in p.comments:
-            print('comment:', s[c.zid].full_name, c.time, c.message)
-            for r in c.replies:
-                print('comment reply:', s[r.zid].full_name, r.time, r.message)
+    related_posts.sort(key=lambda x: x.dtime, reverse=True)
+    # for p in related_posts:
+    # #     print(s[p.zid].full_name, p.time, p.message)
+    #     for c in p.comments:
+    # #         print('comment:', s[c.zid].full_name, c.time, c.message)
+    #         for r in c.replies:
+    #             if 'z' in r.message:
+    #                 print('comment reply:', r.message)
+    #                 print('              ', r.fmessage)
 
 
     # posts = []
@@ -251,7 +274,7 @@ def start():
     #             elif line.startswith('message'):
     #                 posts[-1][2] = line[len('message')+2: ]
     #     post_id += 1
-    return render_template('start.html') 
+    return render_template('start.html', posts=related_posts, s=s) 
 
 # def start(zid = None):
 #     n = session.get('n', 0)
@@ -348,16 +371,25 @@ def newpost():
         post_filenames = sorted(os.listdir(os.path.join(students_dir, student)), reverse=True)
         post_filenames = [int(x.replace('.txt','')) for x in post_filenames if re.match('[0-9]+.txt', x)]
         newpost_filename = str(max(post_filenames)+1)+'.txt'
-        print(newpost_filename)
-        post = request.form['post']
+        post = request.form['message']
         post = post.replace('\r', '')
         post = post.replace('\n', '<br/>')
         with open(os.path.join(students_dir, student, newpost_filename), 'w') as f:
-            f.write('time: '+ datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
+            f.write('time: '+ datetime.now().strftime('%Y-%m-%dT%H:%M:%S+0000')+'\n')
             f.write('from: '+student+'\n')
             f.write('longitude: 150.3226\n')
             f.write('latitude: -33.7140\n')
             f.write('message: '+post)
+        s[student].refreshPosts()
+        return redirect('/')
+
+@app.route('/newcomment', methods=['GET','POST'])
+def newcomment():
+    if request.method == 'POST':
+        student = request.cookies.get('user_id') 
+        post_zid = request.form['post_zid']
+        message = request.form['comment']
+        print(post_zid, message)
         return redirect('/')
 
 @app.route('/logout', methods=['GET','POST'])
@@ -366,8 +398,6 @@ def logout():
     resp.set_cookie('user_id', '', expires=0)
     resp.set_cookie('user_name', '', expires=0)
     return resp
-
-
 
 def getName(zid):
     details_filename = os.path.join(students_dir, zid, "student.txt")
