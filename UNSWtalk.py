@@ -334,13 +334,13 @@ def results():
             if query.lower() in v.full_name.lower():
                 people.append(k)
             for p in v.posts:
-                if query in p.fmessage:
+                if query.lower() in p.fmessage.lower():
                     posts.append(p)
                 for c in p.comments:
-                    if query in c.fmessage:
+                    if query.lower() in c.fmessage.lower():
                         comments.append(c)
                     for r in c.replies:
-                        if query in r.fmessage:
+                        if query.lower() in r.fmessage.lower():
                             replies.append(r)
 
         # for student_to_show in students:
