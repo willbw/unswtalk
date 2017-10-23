@@ -411,6 +411,7 @@ def newcomment():
         post_zid = request.form['post_zid']
         post_id = request.form['post_id']
         message = request.form['comment']
+        print(post_id)
         num_comments = s[post_zid].posts[int(post_id)].num_comments
         newcomment_filename = post_id + '-' + str(num_comments) + '.txt'
         with open(os.path.join(students_dir, post_zid, newcomment_filename), 'w') as f:
@@ -437,8 +438,31 @@ def newreply():
         s[post_zid].refreshPosts()
         return redirect(url_for('start'))
 
-@app.route('/deltepost', methods=['GET','POST'])
+@app.route('/deletepost', methods=['GET','POST'])
 def deletepost():
+    if request.method == 'POST':
+        student = request.cookies.get('user_id') 
+        post_zid = request.form['post_zid']
+        post_id = request.form['post_id']
+        for p in s[post_zid].posts:
+            # print(p.post_id, p.file)
+            if p.post_id == post_id:
+                os.remove(p.file)
+                for c in p.comments:
+                    os.remove(c.file)
+                    for r in c.replies:
+                        os.remove(r.file)
+            if int(p.post_id) > int(post_id):
+                print(p.file)
+                old = p.post_id
+                new = str(int(old) - 1)
+                os.rename(p.file,re.sub('/'+old+'.txt','/'+new+'.txt', p.file, 1))
+                for c in p.comments:
+                    os.rename(c.file,re.sub('/'+old+'-','/'+new+'-', c.file, 1))
+                    for r in c.replies:
+                        os.rename(r.file,re.sub('/'+old+'-','/'+new+'-', r.file, 1))
+        del(s[post_zid].posts[int(post_id)])
+        s[post_zid].refreshPosts()
     # We get the post ID passed back from the user
     # we just need to delete the post file
     # rename any subsequent files to be n-1 so they will be sequestial

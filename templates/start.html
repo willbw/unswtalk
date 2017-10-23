@@ -23,7 +23,6 @@
 	<div class="row">
 	<div class="col">
 		<div class="card mb-3 p-3">
-    	<!-- <h5>{{ post[0]|safe }}</h5> -->
     	<div class="card-body">
     	<h5>
 	        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
@@ -35,20 +34,22 @@
     	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
     	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
 		 <input class="form-control form-control-sm mb-2" type="text" name="comment" id="comment" placeholder="Write a comment...">
-		 <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+		 <div class="row p-3">
+		 <button type="submit" class="btn btn-outline-primary btn-sm mr-2">Submit</button>
+		</form>
     	{% if post.comments %}
-    	  <button class="btn btn-outline-success btn-sm" type="button" data-toggle="collapse" data-target="#{{post.hsh}}" aria-expanded="false" aria-controls="comment{{post.hsh}}">
+    	  <button class="btn btn-outline-success btn-sm mr-2" type="button" data-toggle="collapse" data-target="#{{post.hsh}}" aria-expanded="false" aria-controls="comment{{post.hsh}}">
     	  	View Comments
 		  </button>
 		 {% endif %} 
 		 {% if post.zid == my_id %}
-    	<form action="{{ url_for('deletepost')}}" method="POST">
+    	<form class="form-inline" action="{{ url_for('deletepost')}}" method="POST">
     	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
     	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
 		 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
 		</form>
 		 {% endif %}
-		</form>
+		</div>
 		<div class="collapse" id="{{post.hsh}}">
 		{% for comment in post.comments %}
 		  <div class="card ml-1 mt-2 bg-light">
