@@ -239,73 +239,15 @@ for k, v in s.items():
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
-def start():
+def start(err=None):
     #posts
     # post_id = 0
     student_to_show = request.cookies.get('user_id') 
     if not student_to_show:
-        return render_template('start.html')
+        return render_template('register.html')
     related_posts = s[student_to_show].getPosts()
     related_posts.sort(key=lambda x: x.dtime, reverse=True)
-    # for p in related_posts:
-    # #     print(s[p.zid].full_name, p.time, p.message)
-    #     for c in p.comments:
-    # #         print('comment:', s[c.zid].full_name, c.time, c.message)
-    #         for r in c.replies:
-    #             if 'z' in r.message:
-    #                 print('comment reply:', r.message)
-    #                 print('              ', r.fmessage)
-
-
-    # posts = []
-    # post_filenames = sorted(os.listdir(os.path.join(students_dir, student_to_show)), reverse=True)
-    # post_filenames = [x for x in post_filenames if re.match('[0-9]+.txt', x)]
-    # post_filenames.sort(key = lambda x: int(x.split('.')[0]), reverse=True)
-    # post_fields = ['time', 'from', 'msg']
-    # for file in post_filenames:
-    #     # print("FILE:",file)
-    #     file = os.path.join(students_dir, student_to_show, file)
-    #     with open(file, 'r', encoding='utf8') as f:
-    #         # 0. User name, 1. Time, 2. Message, 3. Post ID, 4. User Photo, 5. zID
-    #         posts.append(['','','', str(post_id), '', '', []])
-    #         for line in f:
-    #             line = line.rstrip()
-    #             line = line.replace('\\n', '<br/>')
-    #             if line.startswith('from'):
-    #                 posts[-1][0] = getName(line[len('from')+2: ])
-    #                 posts[-1][4] = getPicture(line[len('from')+2: ])
-    #                 posts[-1][5] = line[len('from')+2: ]
-    #             elif line.startswith('time'):
-    #                 posts[-1][1] = getDate(line[len('time')+2: ])
-    #             elif line.startswith('message'):
-    #                 posts[-1][2] = line[len('message')+2: ]
-    #     post_id += 1
-    return render_template('start.html', posts=related_posts, s=s) 
-
-# def start(zid = None):
-#     n = session.get('n', 0)
-#     students = sorted(os.listdir(students_dir))
-#     students = [x for x in students if not x.startswith('.')]
-#     student_to_show = students[n % len(students)]
-
-#     user(student_to_show)
-
-#     # details = {}
-#     # details_filename = os.path.join(students_dir, student_to_show, "student.txt")
-#     # if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-#     #     details['picture'] = os.path.join(students_dir, student_to_show, "img.jpg") 
-#     # else: details['picture'] = os.path.join("egg.gif")
-#     # with open(details_filename) as f:
-#     #     for line in f:
-#     #         line = line.rstrip()
-#     #         for field in fields:
-#     #             if line.startswith(field):
-#     #                 details[field] = line[len(field)+2:] 
-#     #                 break
-#     # details['friends'] = re.sub(r'[\(\)]','', details['friends'])
-#     # details['friends'] = details['friends'].split(', ')
-#     # session['n'] = n + 1
-#     # return render_template('start.html', **details, students_dir=students_dir) 
+    return render_template('feed.html', posts=related_posts, s=s) 
 
 @app.route('/user/<zid>', methods=['GET','POST'])
 def user(zid=None):
@@ -342,24 +284,7 @@ def results():
                     for r in c.replies:
                         if query.lower() in r.fmessage.lower():
                             replies.append(r)
-
-        # for student_to_show in students:
-        #     details_filename = os.path.join(students_dir, student_to_show, "student.txt")
-        #     with open(details_filename) as f:
-        #         for line in f:
-        #             line = line.rstrip()
-        #             if line.startswith('full_name'):
-        #                 name = line[len('full_name')+2:] 
-        #                 break
-        #     if query.lower() in name.lower():
-        #         if os.path.exists(os.path.join(students_dir, student_to_show, "img.jpg")):
-        #             pic = os.path.join(students_dir, student_to_show, "img.jpg") 
-        #         else: pic = os.path.join("egg.gif")
-        #         result.append((student_to_show, name, pic))
         return render_template("results.html", s=s, people=people, posts=posts, comments=comments, replies=replies) 
-    # students = sorted(os.listdir(students_dir))
-    # students = [x for x in students if not x.startswith('.')]
-    # student_to_show = students[n % len(students)]
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -367,23 +292,26 @@ def login():
         user_id = request.form['user_id']
         password = request.form['password']
         details_filename = os.path.join(students_dir, user_id, "student.txt")
-        with open(details_filename) as f:
-            this_zid = ''
-            this_password = ''
-            for line in f:
-                line = line.rstrip()
-                if line.startswith('zid'):
-                    this_zid = line[len('zid')+2: ] 
-                elif line.startswith('password'):
-                    this_password = line[len('password')+2:] 
-                elif line.startswith('full_name'):
-                    name = line[len('full_name')+2: ] 
-            if user_id == this_zid and password == this_password:
-                resp = make_response(render_template("success.html"))
-                resp.set_cookie('user_id', user_id)
-                resp.set_cookie('user_name', name)
-                return resp 
-        return 'Failed Login'
+        try:
+            with open(details_filename) as f:
+                this_zid = ''
+                this_password = ''
+                for line in f:
+                    line = line.rstrip()
+                    if line.startswith('zid'):
+                        this_zid = line[len('zid')+2: ] 
+                    elif line.startswith('password'):
+                        this_password = line[len('password')+2:] 
+                    elif line.startswith('full_name'):
+                        name = line[len('full_name')+2: ] 
+                if user_id == this_zid and password == this_password:
+                    resp = make_response(render_template("success.html"))
+                    resp.set_cookie('user_id', user_id)
+                    resp.set_cookie('user_name', name)
+                    return resp 
+        except OSError:
+            return render_template("register.html", err='zID is not registered.')
+        return render_template("register.html", err='Password incorrect.')
 
 @app.route('/newpost', methods=['GET','POST'])
 def newpost():

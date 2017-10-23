@@ -47,8 +47,8 @@
           {% if not 'user_id' in request.cookies %}
           <ul class="nav navbar-nav ml-auto justify-content-end">
           <form class="form-inline my-2 my-lg-0" action="{{ url_for('login') }}" method="POST">
-            <input class="form-control mr-sm-2" type="text" name="user_id" placeholder="zID">
-            <input class="form-control mr-sm-2" type="password" name="password" placeholder="Password">
+            <input class="form-control mr-sm-2" type="text" name="user_id" placeholder="zID" required>
+            <input class="form-control mr-sm-2" type="password" name="password" placeholder="Password" required>
             <button class="btn btn-outline-success my-2 mr-sm-2 my-sm-0" type="submit">Login</button>
           </form>
         </ul>
@@ -65,8 +65,8 @@
     {% block body_contents %}
     {% endblock %}
 </div>
-<script src="{{url_for('static', filename='bootstrap.min.js')}}")></script>
-<script src="{{url_for('static', filename='popper.min.js')}}")></script>
-<script src="{{url_for('static', filename='collapse.js')}}")></script>
+	<script src="{{url_for('static', filename='bootstrap.min.js')}}")></script>
+	<script src="{{url_for('static', filename='popper.min.js')}}")></script>
+	<script src="{{url_for('static', filename='collapse.js')}}")></script>
 </body>
 </html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+
+
+{% if err %}
+<div class="alert alert-warning" role="alert">
+  <strong>Failed Login</strong> {{ err }}
+</div>
+{% endif %}
+
+<!-- Some of this code taken from https://getbootstrap.com/docs/4.0/components/forms/ -->
+<h1 class="display-4">Join us today!</h1>
+<h4 class="text-muted mb-5">We're the most vibrant fake community on the internet.</h4>
+<form>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+              <label for="inputName">Full Name</label>
+              <input type="text" class="form-control" id="inputName" placeholder="Eric Martin" required>
+            </div>
+            <div class="form-group">
+              <label for="inputName">zID</label>
+              <input type="text" class="form-control" id="inputName" placeholder="z1234567" required>
+            </div>
+            <div class="form-group">
+              <label for="inputName">Password</label>
+              <input type="password" class="form-control" id="inputName" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+              <label for="inputName">Email</label>
+              <input type="email" class="form-control" id="inputName" placeholder="z1234567@unsw.edu.au" required>
+            </div>
+            <div class="form-group">
+              <label for="inputName">Program</label>
+              <input type="email" class="form-control" id="inputName" placeholder="Master of Information Technology" required>
+            </div>
+            <div class="form-group">
+              <label for="inputName">Home Suburb</label>
+              <input type="email" class="form-control" id="inputName" placeholder="Darlinghurst" required>
+            </div>
+            <div class="form-group">
+                <label for="inputName">Profile Picture</label>
+                <input type="file" class="form-control-file" id="inputPicture" name="inputPicture">
+            </div>
+             <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        <div class="col-md-8">
+            I will write some stuff about how great UNSW talk is here.
+        </div>
+    </div>
+</form>
+
+{% endblock %}
