@@ -30,6 +30,7 @@
 			{% endif %}
 			{% for p in posts %}
 			    <li class="list-group-item">
+			        <p><strong>{{ s[p.zid].full_name }}</strong> {{ p.time }}</p>
 			    	{{ p.fmessage|safe }}
 			    </li>
 			{% endfor %}
