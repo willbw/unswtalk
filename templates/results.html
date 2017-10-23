@@ -8,7 +8,7 @@
 </div>
 <div class="jumbotron">
 <div class="row">
-	<div class="col-sm-4">
+	<div class="col-sm-3">
 		<h4>People</h4>
 		<ul class="list-group">
 			{% if not people %}
@@ -22,7 +22,7 @@
 			{% endfor %}
 		</ul>
 	</div>
-	<div class="col-sm-4">
+	<div class="col-sm-9">
 		<h4>Posts</h4>
 		<ul class="list-group">
 			{% if not posts %}
@@ -31,19 +31,6 @@
 			{% for p in posts %}
 			    <li class="list-group-item">
 			    	{{ p.fmessage|safe }}
-			    </li>
-			{% endfor %}
-		</ul>
-	</div>
-	<div class="col-sm-4">
-		<h4>Comments</h4>
-		<ul class="list-group">
-			{% if not comments %}
-				No results :(
-			{% endif %}
-			{% for c in comments %}
-			    <li class="list-group-item">
-			    	{{ c.fmessage|safe }}
 			    </li>
 			{% endfor %}
 		</ul>
