@@ -40,6 +40,7 @@
 </div>
 <div class="row">
 	<div class="col-sm-12">
+		{% if s[student].friends %}
     		{% for friend_row in s[student].friends | batch(4) %}
     		<div class="row">
     			{% for friend in friend_row %}
@@ -50,6 +51,7 @@
                 {% endfor %}
             </div>
     		{% endfor %}
+    		{% endif %}
         </div>
 </div>
 {% endblock %}

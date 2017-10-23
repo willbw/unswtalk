@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+<div class="container">
+ 	<div class="row">
+ 		<div class="col mb-3">
+		<div class="card bg-light">
+		  <h4 class="card-header">What's on your mind?</h4>
+		  <div class="card-body"> 
+		  	<form action="{{ url_for('newpost') }}" method="POST">
+    		<textarea class="form-control" rows="5" id="message" name="message"></textarea>
+    		<div class="text-right">
+        		<button class="btn btn-success mt-3" type="submit">Post</button>
+        	</div>
+	        </form>
+		  </div>
+		</div>
+	</div>
+</div>
+</div>
+<div class="container">
+	{% for post in posts %}
+	<div class="row">
+	<div class="col">
+		<div class="card mb-3 p-3">
+    	<div class="card-body">
+    	<h5>
+	        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+			<a href="{{url_for('user', zid=post.zid)}}" class="text-dark ml-1">{{ s[post.zid].full_name }}</a>
+		</h5>
+    	<p class="text-muted">{{ post.time|safe }}</p>
+    	<p>{{ post.fmessage|safe }}</p>
+    	<form action="{{ url_for('newcomment')}}" method="POST">
+    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+		 <input class="form-control form-control-sm mb-2" type="text" name="comment" id="comment" placeholder="Write a comment...">
+		 <div class="row p-3">
+		 <button type="submit" class="btn btn-outline-primary btn-sm mr-2">Submit</button>
+		</form>
+    	{% if post.comments %}
+    	  <button class="btn btn-outline-success btn-sm mr-2" type="button" data-toggle="collapse" data-target="#{{post.hsh}}" aria-expanded="false" aria-controls="comment{{post.hsh}}">
+    	  	View Comments
+		  </button>
+		 {% endif %} 
+		 {% if post.zid == my_id %}
+    	<form class="form-inline" action="{{ url_for('deletepost')}}" method="POST">
+    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+		 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+		</form>
+		 {% endif %}
+		</div>
+		<div class="collapse" id="{{post.hsh}}">
+		{% for comment in post.comments %}
+		  <div class="card ml-1 mt-2 bg-light">
+	    	<div class="card-body">
+	    	<p class="text-muted">
+		        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+				<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[comment.zid].full_name }}</a>
+				{{ comment.time|safe }}
+			</p>
+	    	<p>{{ comment.fmessage|safe }}</p>
+	    	<form action="{{ url_for('newreply')}}" method="POST">
+	    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+	    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+	    	 <input type="hidden" name="comment_id" value="{{ comment.comment_id }}" />
+			 <input class="form-control form-control-sm mb-2" type="text" name="comment" id="comment" placeholder="Write a comment...">
+			 <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+			</form>
+			{% for reply in comment.replies %}
+			  <div class="card ml-2 mt-2 card-body bg-light">
+		    	<p class="text-muted">
+			        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+					<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[reply.zid].full_name }}</a>
+					{{ reply.time|safe }}
+				</p>
+		    	<p>{{ reply.fmessage|safe }}</p>
+			  </div>
+			  {% endfor %}
+		  </div>
+		</div>
+		  {% endfor %}
+		</div>
+	</div>
+	    </div>
+    </div>
+	</div>
+	{% endfor %}
+</div>
+{% endblock %}

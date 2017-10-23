@@ -218,9 +218,10 @@ class Student:
     def getPosts(self):
         my_related = []
         for key, student in s.items():
-            for post in student.posts:
-                if self.zid in post.related_to:
-                    my_related.append(post)
+            if student.posts:
+                for post in student.posts:
+                    if self.zid in post.related_to:
+                        my_related.append(post)
         return my_related
 
 def updateStudentList():
@@ -319,7 +320,10 @@ def newpost():
         student = request.cookies.get('user_id') 
         post_filenames = sorted(os.listdir(os.path.join(students_dir, student)), reverse=True)
         post_filenames = [int(x.replace('.txt','')) for x in post_filenames if re.match('[0-9]+.txt', x)]
-        newpost_filename = str(max(post_filenames)+1)+'.txt'
+        if post_filenames:
+            newpost_filename = str(max(post_filenames)+1)+'.txt'
+        else:
+            newpost_filename = '0.txt'
         post = request.form['message']
         post = post.replace('\r', '')
         post = post.replace('\n', '<br/>')
@@ -396,6 +400,47 @@ def deletepost():
     # rename any subsequent files to be n-1 so they will be sequestial
     # then we are done
     return redirect(url_for('start'))
+
+@app.route('/newaccount', methods=['GET','POST'])
+def newaccount():
+    if request.method == 'POST':
+        zid = request.form['inputzID']
+        if os.path.exists(os.path.join(students_dir, zid)):
+            return render_template("register.html", err2='zID is already registered.')
+        else:
+            print("ATTEMPTING TO REGGISTER")
+            os.mkdir(os.path.join(students_dir, zid))
+            os.mkdir(os.path.join('static',students_dir, zid))
+            full_name = request.form['inputName']
+            full_name = ' '.join([x.capitalize() for x in full_name.split()])
+            password = request.form['inputPassword']
+            email = request.form['inputEmail']
+            birthday = request.form['inputBday']
+            program = request.form['inputProgram']
+            home_suburb = request.form['inputSuburb']
+            with open(os.path.join(students_dir, zid, 'student.txt'), 'w') as f:
+                f.write('zid: '+ zid+'\n')
+                f.write('full_name: '+ full_name+'\n')
+                f.write('birthday: '+ birthday+'\n')
+                f.write('password: '+ password+'\n')
+                f.write('email: '+ email+'\n')
+                f.write('program: '+ program+'\n')
+                f.write('home_suburb: '+ home_suburb+'\n')
+                f.write('home_longitude: 151.2005\n')
+                f.write('home_latitude: -33.6672\n')
+                f.write('friends: (z5195151, z5195995)\n')
+                f.write('courses: ()\n')
+            picture = request.form['inputPicture'] # remember this is optional
+            resp = make_response(render_template("success.html"))
+            resp.set_cookie('user_id', zid)
+            resp.set_cookie('user_name', full_name)
+            updateStudentList()
+            for k, v in s.items():
+                v.refreshPosts()
+            return resp 
+    return redirect(url_for('start'))
+    # Use string.capitalize() to properly format user input
+    # ' '.join([x.capitalize() for x in str.split()])
 
 @app.route('/logout', methods=['GET','POST'])
 def logout():
