@@ -109,7 +109,7 @@ class Comment:
         self.fmessage = self.message
         if re.match('.*z[0-9]{7}.*', self.fmessage):
             for k, v in s.items():
-                self.fmessage = self.fmessage.replace(k,'<a href="/user/'+k+'">'+v.full_name+'</a>')
+                self.fmessage = self.fmessage.replace(k,'<a href=" + url_for('user', zid=k) + '">'+v.full_name+'</a>')
         self.related_to = re.findall('z[0-9]{7}', self.message)
         self.hsh = hash(file)
         self.getReplies() 
