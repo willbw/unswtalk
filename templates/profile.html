@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 
 {% block body_contents %}
-<div class="jumbotron">
-<div class="row mb-4">
-	<div class="col-sm-12"> 
-		<h3>{{ s[student].full_name }}</h3>
- 	</div>
-</div>
+		<h1 class="display-5">{{ s[student].full_name }}</h1>
+<div class="card bg-light">
+	<div class="card-body">
+		<div class="card card-body text-white bg-secondary mb-3">
+			<p class="card-text lead font-italic">
+			Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Duis mollis, est non commodo luctus.
+			</p>
+		</div>
+
 <div class="row mb-3">
 	<div class="col-md-3">	
 		<img src="{{url_for('static',filename=s[student].picture)}}" width=200px height=200px></img>
@@ -38,13 +41,14 @@
 		</table>
 	</div>
 </div>
-<div class="row">
-	<div class="col-sm-12">
+<div class="card border-success">
+	<div class="card-header text-success"><h5>Friends List</h5></div>
+	<div class="card-body">
 		{% if s[student].friends %}
     		{% for friend_row in s[student].friends | batch(4) %}
     		<div class="row">
     			{% for friend in friend_row %}
-    			<div class="col-sm-3 mb-2">
+    			<div class="col-sm-3 mb-3">
 	                <img src="{{url_for('static',filename=s[friend].picture)}}" class="rounded-circle" height="35" width="35">
 	        		<a href="{{url_for('user', zid=s[friend].zid)}}">{{ s[friend].full_name }}</a>
 	            </div>
@@ -53,5 +57,6 @@
     		{% endfor %}
     		{% endif %}
         </div>
+    </div>
 </div>
 {% endblock %}
