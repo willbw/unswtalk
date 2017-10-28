@@ -25,12 +25,16 @@
 	</div>
 
 	<div class="row">
-		<a href="{{ url_for('friendsuggestions', n = n-10) }}">Previous  </a>
+		<div class="btn-group" role="group" aria-label="Basic example">
+			<form method="POST" action="{{ url_for('friendsuggestions', n = n-10) }}">
+		  <button type="submit" class="btn btn-secondary">Previous</button>
+		</form>
 	{% if recs %}
-	</div>
-	<div class="row">
-		<p class="text-right"><a href="{{ url_for('friendsuggestions', n = max_n) }}">Next</a></p>
+		<form method="POST" action="{{ url_for('friendsuggestions', n = max_n) }}">
+		  <button type="submit" class="btn btn-secondary">Next</button>
+		</form>
 	{% endif %}
+	</div>
 	</div>
 </div>
 {% endblock %}

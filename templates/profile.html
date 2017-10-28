@@ -56,7 +56,14 @@
 	</div>
 </div>
 <div class="card border-success">
-	<div class="card-header text-success"><h5>Friends List</h5></div>
+	<div class="card-header">
+		<div class="row">
+			<h5 class="text-success">Friends List</h5>
+			{% if student == my_id %}
+			<a href="{{ url_for('friendsuggestions', n=0) }}" class="ml-2">want some suggestions?</a>
+			{% endif %}
+		</div>
+	</div>
 	<div class="card-body">
 		{% if s[student].friends[0] != '' %}
     		{% for friend_row in s[student].friends | batch(4) %}

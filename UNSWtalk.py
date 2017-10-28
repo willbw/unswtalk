@@ -441,7 +441,7 @@ def newaccount():
                 f.write('home_suburb: '+ home_suburb+'\n')
                 f.write('home_longitude: 151.2005\n')
                 f.write('home_latitude: -33.6672\n')
-                f.write('friends: (z5195151, z5195995)\n')
+                f.write('friends: (z5195995)\n')
                 f.write('courses: ()\n')
             picture = request.form.get('inputPicture', None) # remember this is optional
             resp = make_response(render_template("success.html"))
@@ -570,14 +570,14 @@ def test():
     print(s[student].courses)
     return redirect(url_for('start'))
 
-@app.route('/friendsuggestions/<n>')
+@app.route('/friendsuggestions/<n>', methods=['GET', 'POST'])
 def friendsuggestions(n=None):
     a = request.cookies.get('user_id') 
     d = {}
     if not n:
         n = 0
     else:
-        n = int(n)
+        n = max(0, int(n))
     for b in [x for x in s if x != a and x not in s[a].friends]:
        d[s[b].zid] = 2 * len(set(s[a].friends) & set(s[b].friends)) + len(set(s[a].courses) & set(s[b].courses))
     recs = sorted(d.items(), key=lambda x:x[1], reverse=True)
