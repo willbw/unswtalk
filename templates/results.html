@@ -2,6 +2,9 @@
 
 {% block body_contents %}
 
+{% if 'user_id' in request.cookies %}
+{% set my_id = request.cookies.get('user_id') %}
+{% endif %}
 
 <div class="row mx-auto style="width: 200px;">
 	<h2>Search Results</h2>
@@ -21,6 +24,18 @@
 			    </li>
 			{% endfor %}
 		</ul>
+		<div class="row">
+			<div class="btn-group" role="group" aria-label="Basic example">
+				<form method="POST" action="{{ url_for('results', people_n = people_n - 10) }}">
+					<button type="submit" class="btn btn-secondary">Previous</button>
+				</form>
+				{% if people_results %}
+				<form method="POST" action="{{ url_for('results', people_n = max_people_n) }}">
+					<button type="submit" class="btn btn-secondary">Next</button>
+				</form>
+				{% endif %}
+			</div>
+		</div>
 	</div>
 	<div class="col-sm-9">
 		<h4>Posts</h4>

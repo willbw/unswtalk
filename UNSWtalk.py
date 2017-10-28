@@ -420,13 +420,45 @@ def results(people_n=0, post_n=0):
                 #     for r in c.replies:
                 #         if query.lower() in r.fmessage.lower():
                 #             replies.append(r)
+        people = people.sort()
+
         return render_template(
             "results.html",
             s=s,
             people=people,
             posts=posts,
             comments=comments,
-            replies=replies)
+            replies=replies,
+            query=query)
+
+# Friend Suggestions
+# FriendScore = ( 2 * Common Friends ) + ( Common Classes )
+# comparing two students, 'a' and 'b', and giving them a score approximating how
+# likely it is they will be friends. I have weighted more heaviliy common friends,
+# as I think if you have taken some common classes you may not know the person,
+# but if you have a few common friends - it is more likely you will socialise with
+# this person.
+
+@app.route('/friendsuggestions/<n>', methods=['GET', 'POST'])
+def friendsuggestions(n=None):
+    a = request.cookies.get('user_id')
+    d = {}
+    if not n:
+        n = 0
+    else:
+        n = max(0, int(n))
+    for b in [x for x in s if x != a and x not in s[a].friends]:
+        d[s[b].zid] = 2 * len(set(s[a].friends) & set(s[b].friends)) + \
+            len(set(s[a].courses) & set(s[b].courses))
+    recs = sorted(d.items(), key=lambda x: x[1], reverse=True)
+    max_n = min(len(recs), n + 10)
+    ten_recs = recs[n: max_n]
+    return render_template(
+        'friendsuggestions.html',
+        recs=ten_recs,
+        n=n,
+        s=s,
+        max_n=max_n)
 
 # Login
 # Look up password associated with the user's zid and see if it matches
@@ -740,34 +772,6 @@ def removefriend(friend):
     st.refresh()
     return redirect(url_for('user', zid=student))
 
-# Friend Suggestions
-# FriendScore = ( 2 * Common Friends ) + ( Common Classes )
-# comparing two students, 'a' and 'b', and giving them a score approximating how
-# likely it is they will be friends. I have weighted more heaviliy common friends,
-# as I think if you have taken some common classes you may not know the person,
-# but if you have a few common friends - it is more likely you will socialise with
-# this person.
-
-@app.route('/friendsuggestions/<n>', methods=['GET', 'POST'])
-def friendsuggestions(n=None):
-    a = request.cookies.get('user_id')
-    d = {}
-    if not n:
-        n = 0
-    else:
-        n = max(0, int(n))
-    for b in [x for x in s if x != a and x not in s[a].friends]:
-        d[s[b].zid] = 2 * len(set(s[a].friends) & set(s[b].friends)) + \
-            len(set(s[a].courses) & set(s[b].courses))
-    recs = sorted(d.items(), key=lambda x: x[1], reverse=True)
-    max_n = min(len(recs), n + 10)
-    ten_recs = recs[n: max_n]
-    return render_template(
-        'friendsuggestions.html',
-        recs=ten_recs,
-        n=n,
-        s=s,
-        max_n=max_n)
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
