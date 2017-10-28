@@ -489,7 +489,7 @@ def submitedit():
             f.write('courses: ' + courses +'\n')
         with open(os.path.join(students_dir, student, 'profile_text.txt'), 'w') as f:
             f.write(profile_text)
-        picture = request.form['inputPicture'] # remember this is optional
+        # picture = request.form['inputPicture'] # remember this is optional
         s[student].refresh()
         return redirect(url_for('user', zid=student))
     return redirect(url_for('start'))
