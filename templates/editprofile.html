@@ -17,7 +17,7 @@
 <!-- Some of this code taken from https://getbootstrap.com/docs/4.0/components/forms/ -->
 <!-- <h1 class="display-4">Join us today!</h1>
 <h4 class="text-muted mb-5">We're the most vibrant fake community on the internet.</h4>
- --><form action="{{ url_for('submitedit') }}" method="POST">
+ --><form action="{{ url_for('submitedit') }}" method="POST" enctype = "multipart/form-data">
     <div class="row">
         <div class="col-md-9">
             <div class="form-group">
@@ -49,12 +49,17 @@
               <input type="text" class="form-control" name="inputPText" value="{{ student.profile_text }}">
             </div>
             <div class="form-group">
-              <label for="inputCourses">Courses</label>
-              <input type="text" class="form-control" name="inputCourses" value="{{ student.courses }}">
+              <label for="inputCourses">Courses (must be comma seperated in the format "2017 S1 COMP9021")</label>
+              {% if student.courses != [] %}
+              <input type="text" class="form-control" name="inputCourses" value="{% for c in student.courses %}{{ c }}{{ ', ' if not loop.last }}{% endfor %}" pattern="^([0-9]{4} S[12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} S[12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
+              {% endif %}
+              {% if student.courses == [] %}
+              <input type="text" class="form-control" name="inputCourses" pattern="^([0-9]{4} S[12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} S[12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
+              {% endif %}
             </div>
             <div class="form-group">
                 <label for="inputPicture">Upload a new profile picture (optional)</label>
-                <input type="file" class="form-control-file" name="inputPicture">
+                <input type="file" class="form-control-file" name="file">
             </div>
              <button type="submit" class="btn btn-primary">Submit</button>
         </div>

@@ -12,6 +12,9 @@
 	{% if student not in s[my_id].friends and student != my_id %}
 	<a class="ml-2" href="{{ url_for('addfriend', friend=student) }}">Add Friend</a>
 	{% endif %}
+	{% if student in s[my_id].friends%}
+	<a class="ml-2 text-danger" href="{{ url_for('removefriend', friend=student) }}">Unfriend</a>
+	{% endif %}
 </div>
 <div class="card bg-light">
 	<div class="card-body">
@@ -55,7 +58,7 @@
 <div class="card border-success">
 	<div class="card-header text-success"><h5>Friends List</h5></div>
 	<div class="card-body">
-		{% if s[student].friends %}
+		{% if s[student].friends[0] != '' %}
     		{% for friend_row in s[student].friends | batch(4) %}
     		<div class="row">
     			{% for friend in friend_row %}
