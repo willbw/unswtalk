@@ -376,37 +376,57 @@ def newreply():
         s[post_zid].refreshPosts()
         return redirect(url_for('start'))
 
-@app.route('/deletepost', methods=['GET','POST'])
-def deletepost():
-    if request.method == 'POST':
-        student = request.cookies.get('user_id') 
-        post_zid = request.form['post_zid']
-        post_id = request.form['post_id']
-        for p in s[post_zid].posts:
-            # print(p.post_id, p.file)
-            if p.post_id == post_id:
-                os.remove(p.file)
-                for c in p.comments:
-                    os.remove(c.file)
-                    for r in c.replies:
-                        os.remove(r.file)
-            if int(p.post_id) > int(post_id):
-                print(p.file)
-                old = p.post_id
-                new = str(int(old) - 1)
-                os.rename(p.file,re.sub('/'+old+'.txt','/'+new+'.txt', p.file, 1))
-                for c in p.comments:
-                    os.rename(c.file,re.sub('/'+old+'-','/'+new+'-', c.file, 1))
-                    for r in c.replies:
-                        os.rename(r.file,re.sub('/'+old+'-','/'+new+'-', r.file, 1))
-        del(s[post_zid].posts[int(post_id)])
-        s[post_zid].refreshPosts()
+# @app.route('/deletepost', methods=['GET','POST'])
+# def deletepost():
+#     if request.method == 'POST':
+#         student = request.cookies.get('user_id') 
+#         post_zid = request.form['post_zid']
+#         post_id = request.form['post_id']
+#         parent_zid = request.form['parent_zid']
+#         for p in s[post_zid].posts:
+#             if p.post_id == post_id:
+#                 with open(p.file, 'r') as f:
+#                     lines = f.readlines()
+#                     for i, line in enumerate(lines):
+#                         if line.startswith('message:'):
+#                             lines[i] = 'message: [Deleted]\n'
+#                 with open(p.file, 'w') as f:
+#                     f.writelines(lines)
+            #     os.remove(p.file)
+            #     for c in p.comments:
+            #         os.remove(c.file)
+            #         for r in c.replies:
+            #             os.remove(r.file)
+            # if int(p.post_id) > int(post_id):
+            #     print(p.file)
+            #     old = p.post_id
+            #     new = str(int(old) - 1)
+            #     os.rename(p.file,re.sub('/'+old+'.txt','/'+new+'.txt', p.file, 1))
+            #     for c in p.comments:
+            #         os.rename(c.file,re.sub('/'+old+'-','/'+new+'-', c.file, 1))
+            #         for r in c.replies:
+            #             os.rename(r.file,re.sub('/'+old+'-','/'+new+'-', r.file, 1))
+        # s[post_zid].refreshPosts()
     # We get the post ID passed back from the user
     # we just need to delete the post file
     # rename any subsequent files to be n-1 so they will be sequestial
     # then we are done
-    return redirect(url_for('start'))
+    # return redirect(url_for('start'))
 
+@app.route('/deletepost', methods=['GET','POST'])
+def deletepost():
+    if request.method == 'POST':
+        post_zid = request.form['post_zid']
+        fname = request.form['fname']
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+            for i, line in enumerate(lines):
+                if line.startswith('message:'):
+                    lines[i] = 'message: [Deleted]\n'
+        with open(fname, 'w') as f:
+            f.writelines(lines)
+        s[post_zid].refreshPosts()
+    return redirect(url_for('start'))
 @app.route('/newaccount', methods=['GET','POST'])
 def newaccount():
     if request.method == 'POST':
@@ -436,7 +456,7 @@ def newaccount():
                 f.write('home_latitude: -33.6672\n')
                 f.write('friends: (z5195151, z5195995)\n')
                 f.write('courses: ()\n')
-            picture = request.form['inputPicture'] # remember this is optional
+            picture = request.form.get('inputPicture', None) # remember this is optional
             resp = make_response(render_template("success.html"))
             resp.set_cookie('user_id', zid)
             resp.set_cookie('user_name', full_name)
@@ -465,7 +485,6 @@ def editprofile():
 def submitedit():
     if request.method == 'POST':
         student = request.cookies.get('user_id') 
-        print("ATTEMPTING TO REGGISTER")
         full_name = request.form['inputName']
         full_name = ' '.join([x.capitalize() for x in full_name.split()])
         password = request.form['inputPassword']
@@ -489,10 +508,41 @@ def submitedit():
             f.write('courses: ' + courses +'\n')
         with open(os.path.join(students_dir, student, 'profile_text.txt'), 'w') as f:
             f.write(profile_text)
-        # picture = request.form['inputPicture'] # remember this is optional
+        picture = request.form.get('inputPicture', None) # remember this is optional
         s[student].refresh()
         return redirect(url_for('user', zid=student))
     return redirect(url_for('start'))
+
+@app.route('/addfriend/<friend>', methods=['GET', 'POST'])
+def addfriend(friend):
+    student = request.cookies.get('user_id') 
+    details_filename = os.path.join(students_dir, student, "student.txt")
+    with open(details_filename) as f:
+        for line in f:
+            line = line.rstrip()
+            if line.startswith('friends'):
+                friends = line[len('friends')+2:] 
+                break
+    # FRIEND LIST
+    friends = re.sub(r'[\(\)]','', friends)
+    friends = friends.split(', ')
+    friends.append(friend)
+    friends = '(' + ', '.join(friends) + ')\n'
+    st = s[student] # Current Student
+    with open(os.path.join(students_dir, student, 'student.txt'), 'w') as f:
+        f.write('zid: '+ st.zid+'\n')
+        f.write('full_name: '+ st.full_name+'\n')
+        f.write('birthday: '+ st.birthday+'\n')
+        f.write('password: '+ st.password+'\n')
+        f.write('email: '+ st.email+'\n')
+        f.write('program: '+ st.email+'\n')
+        f.write('home_suburb: '+ st.home_suburb+'\n')
+        f.write('home_longitude: 151.2005\n')
+        f.write('home_latitude: -33.6672\n')
+        f.write('friends: ' + friends)
+        f.write('courses: ' + st.courses +'\n')
+    st.refresh()
+    return redirect(url_for('user', zid=student))
 
 @app.route('/test')
 def test():

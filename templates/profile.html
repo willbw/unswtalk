@@ -4,17 +4,20 @@
 {% if 'user_id' in request.cookies %}
 {% set my_id = request.cookies.get('user_id') %}
 {% endif %}
-<div class="row">
+<div class="container row">
 	<h1 class="display-5" display="inline">{{ s[student].full_name }}</h1>
 	{% if student == my_id %}
 	<a class="ml-2" href="{{ url_for('editprofile') }}">Edit Profile</a>
 	{% endif %}	
+	{% if student not in s[my_id].friends and student != my_id %}
+	<a class="ml-2" href="{{ url_for('addfriend', friend=student) }}">Add Friend</a>
+	{% endif %}
 </div>
 <div class="card bg-light">
 	<div class="card-body">
 		<div class="card card-body text-white bg-secondary mb-3">
 			<p class="card-text lead">
-			{{ s[student].profile_text }} 
+			{{ s[student].profile_text | safe }} 
 			</p>
 		</div>
 

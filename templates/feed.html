@@ -45,7 +45,7 @@
 		 {% if post.zid == my_id %}
     	<form class="form-inline" action="{{ url_for('deletepost')}}" method="POST">
     	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
-    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
+    	 <input type="hidden" name="fname" value="{{ post.file }}" />
 		 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
 		</form>
 		 {% endif %}
@@ -55,8 +55,8 @@
 		  <div class="card ml-1 mt-2 bg-light">
 	    	<div class="card-body">
 	    	<p class="text-muted">
-		        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
-				<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[comment.zid].full_name }}</a>
+		        <img src="{{url_for('static', filename=s[comment.zid].picture)}}" class="rounded-circle" height="35" width="35">
+				<a href="{{url_for('user', zid=comment.zid)}}" class="text-dark">{{ s[comment.zid].full_name }}</a>
 				{{ comment.time|safe }}
 			</p>
 	    	<p>{{ comment.fmessage|safe }}</p>
@@ -65,16 +65,32 @@
 	    	 <input type="hidden" name="post_id" value="{{ post.post_id }}" />
 	    	 <input type="hidden" name="comment_id" value="{{ comment.comment_id }}" />
 			 <input class="form-control form-control-sm mb-2" type="text" name="comment" id="comment" placeholder="Write a comment...">
-			 <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+			 <div class="row p-3">
+			 <button type="submit" class="btn btn-outline-primary btn-sm mr-2">Submit</button>
 			</form>
+			 {% if comment.zid == my_id %}
+	    	<form class="form-inline" action="{{ url_for('deletepost')}}" method="POST">
+	    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+	    	 <input type="hidden" name="fname" value="{{ comment.file }}" />
+			 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+			</form>
+		 {% endif %}
+		</div>
 			{% for reply in comment.replies %}
 			  <div class="card ml-2 mt-2 card-body bg-light">
 		    	<p class="text-muted">
-			        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
-					<a href="{{url_for('user', zid=post.zid)}}" class="text-dark">{{ s[reply.zid].full_name }}</a>
+			        <img src="{{url_for('static', filename=s[reply.zid].picture)}}" class="rounded-circle" height="35" width="35">
+					<a href="{{url_for('user', zid=reply.zid)}}" class="text-dark">{{ s[reply.zid].full_name }}</a>
 					{{ reply.time|safe }}
 				</p>
 		    	<p>{{ reply.fmessage|safe }}</p>
+				 {% if reply.zid == my_id %}
+			    	<form class="form-inline" action="{{ url_for('deletepost')}}" method="POST">
+			    	 <input type="hidden" name="post_zid" value="{{ post.zid }}" />
+			    	 <input type="hidden" name="fname" value="{{ reply.file }}" />
+					 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+					</form>
+				 {% endif %}
 			  </div>
 			  {% endfor %}
 		  </div>
