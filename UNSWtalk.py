@@ -490,13 +490,8 @@ def submitedit():
         with open(os.path.join(students_dir, student, 'profile_text.txt'), 'w') as f:
             f.write(profile_text)
         picture = request.form['inputPicture'] # remember this is optional
-        resp = make_response(render_template("success.html"))
-        resp.set_cookie('user_id', zid)
-        resp.set_cookie('user_name', full_name)
-        updateStudentList()
-        for k, v in s.items():
-            v.refreshPosts()
-        return resp 
+        s[student].refresh()
+        return redirect(url_for('user', zid=student))
     return redirect(url_for('start'))
 
 @app.route('/test')
