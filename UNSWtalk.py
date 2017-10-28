@@ -164,7 +164,7 @@ class Student:
                  email=None, friends=None, full_name=None, 
                  home_latitude=None, home_longitude=None, 
                  home_suburb=None, password=None, picture=None,
-                 posts=None, program=None):
+                 posts=None, program=None, ptext=None):
         self.zid = zid
         self.refresh()
 
@@ -173,6 +173,7 @@ class Student:
         for field in fields:
             details[field] = ''
         details_filename = os.path.join(students_dir, self.zid, "student.txt")
+        ptext_filename = os.path.join(students_dir, self.zid, "profile_text.txt") 
         # USER DETAILS
         if os.path.exists(os.path.join(students_dir, self.zid, "img.jpg")):
             details['picture'] = os.path.join(students_dir, self.zid, "img.jpg") 
@@ -186,6 +187,11 @@ class Student:
                         break
         details['age'] = date.today() - date(int(details['birthday'][ :4]), int(details['birthday'][5:7]), int(details['birthday'][8:10]))  
         details['age'] = int(details['age'].days // 365.25)
+        if os.path.exists(ptext_filename):
+            with open(ptext_filename) as f:
+                self.profile_text = f.read()
+        else:
+            self.profile_text = 'Put some profile text here!'
         
         # FRIEND LIST
         details['friends'] = re.sub(r'[\(\)]','', details['friends'])
@@ -448,6 +454,56 @@ def logout():
     resp.set_cookie('user_id', '', expires=0)
     resp.set_cookie('user_name', '', expires=0)
     return resp
+
+@app.route('/editprofile', methods=['GET', 'POST'])
+def editprofile():
+    student = request.cookies.get('user_id') 
+    student = s[student]
+    return render_template("editprofile.html", student=student)
+
+@app.route('/submitedit', methods=['GET','POST'])
+def submitedit():
+    if request.method == 'POST':
+        student = request.cookies.get('user_id') 
+        print("ATTEMPTING TO REGGISTER")
+        full_name = request.form['inputName']
+        full_name = ' '.join([x.capitalize() for x in full_name.split()])
+        password = request.form['inputPassword']
+        email = request.form['inputEmail']
+        birthday = request.form['inputBday']
+        program = request.form['inputProgram']
+        home_suburb = request.form['inputSuburb']
+        profile_text = request.form['inputPText']
+        courses = request.form['inputCourses']
+        with open(os.path.join(students_dir, student, 'student.txt'), 'w') as f:
+            f.write('zid: '+ student+'\n')
+            f.write('full_name: '+ full_name+'\n')
+            f.write('birthday: '+ birthday+'\n')
+            f.write('password: '+ password+'\n')
+            f.write('email: '+ email+'\n')
+            f.write('program: '+ program+'\n')
+            f.write('home_suburb: '+ home_suburb+'\n')
+            f.write('home_longitude: 151.2005\n')
+            f.write('home_latitude: -33.6672\n')
+            f.write('friends: ' + '(' + ', '.join([x for x in s[student].friends]) + ')\n')
+            f.write('courses: ' + courses +'\n')
+        with open(os.path.join(students_dir, student, 'profile_text.txt'), 'w') as f:
+            f.write(profile_text)
+        picture = request.form['inputPicture'] # remember this is optional
+        resp = make_response(render_template("success.html"))
+        resp.set_cookie('user_id', zid)
+        resp.set_cookie('user_name', full_name)
+        updateStudentList()
+        for k, v in s.items():
+            v.refreshPosts()
+        return resp 
+    return redirect(url_for('start'))
+
+@app.route('/test')
+def test():
+    student = request.cookies.get('user_id') 
+    print('(' + ', '.join([x for x in s[student].friends]) + ')\n')
+    return redirect(url_for('start'))
 
 def getName(zid):
     details_filename = os.path.join(students_dir, zid, "student.txt")
