@@ -27,6 +27,7 @@ fields = ['birthday',
           'zid']
 
 # Re-formats dates from the supplied dataset in format '01 January 2017 at 18:45'
+
 def getDate(date):
     regex = re.match(
         '([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}:[0-9]{2}).*',
@@ -100,12 +101,15 @@ class Post:
         for comment in self.comments:
             self.num_comments += 1
             self.related_to += comment.related_to
-        # Add in related to for comments to the main post.
 
     def sortComments(self, filename):
         match = re.match('.*-([0-9]+).txt', filename)
         return int(match.group(1))
 
+# Comment data object
+#
+# Similar structure to Post object, however we keep track of replies and also
+# the parent post
 
 class Comment:
     def __init__(
@@ -171,6 +175,10 @@ class Comment:
         match = re.match('.*-.*-([0-9]+).txt', filename)
         return int(match.group(1))
 
+# Reply data object
+#
+# Similar to Comment data object, however you are unable to reply to replies so this 
+# is the lowest level possible in a post/comment chain
 
 class Reply:
     def __init__(
@@ -210,14 +218,33 @@ class Reply:
         self.related_to = re.findall('z[0-9]{7}', self.message) + [self.zid]
         self.hsh = hash(file)
 
+# Student data type
+#
+# Stores all the information from student.txt in one data object, and keeps track
+# of all posts by the student.
+# Able to be refreshed entirely, or just for the student's posts to be refreshed
+# (if we have had a new post made).
+# getPosts() function will get all related posts for the student, for
+# publishing on the news feed.
 
 class Student:
-    def __init__(self, zid,
-                 age=None, birthday=None, courses=None,
-                 email=None, friends=None, full_name=None,
-                 home_latitude=None, home_longitude=None,
-                 home_suburb=None, password=None, picture=None,
-                 posts=None, program=None, ptext=None):
+    def __init__(
+            self,
+            zid,
+            age=None,
+            birthday=None,
+            courses=None,
+            email=None,
+            friends=None,
+            full_name=None,
+            home_latitude=None,
+            home_longitude=None,
+            home_suburb=None,
+            password=None,
+            picture=None,
+            posts=None,
+            program=None,
+            ptext=None):
         self.zid = zid
         self.refresh()
 
@@ -300,6 +327,7 @@ class Student:
                         my_related.append(post)
         return my_related
 
+# updateStudentList initalises all of our students in the s dictionary
 
 def updateStudentList():
     for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
@@ -309,33 +337,34 @@ def updateStudentList():
             s[zid].refresh()
 
 
-# Dictionary in which to store all out of our students
-# store all of the students info as objects in our dictionary
+# 's' is a dictionary in which to store all out of our students as objects
+# where zid is the key to the dictionary
 s = {}
 updateStudentList()
 for k, v in s.items():
     v.refreshPosts()
 
+# This functionality disabled temporarily
 
-@app.after_request
-def add_header(r):
-    # Code taken from StackOverflow
-    """
-    Add headers to both force latest IE rendering engine or Chrome Frame,
-    and also to cache the rendered page for 10 minutes.
-    """
-    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    r.headers["Pragma"] = "no-cache"
-    r.headers["Expires"] = "0"
-    r.headers['Cache-Control'] = 'public, max-age=0'
-    return r
+# @app.after_request
+# def add_header(r):
+#     # Code taken from StackOverflow
+#     """
+#     Add headers to both force latest IE rendering engine or Chrome Frame,
+#     and also to cache the rendered page for 10 minutes.
+#     """
+#     r.headers["Pragma"] = "no-cache"
+#     r.headers["Expires"] = "0"
+#     r.headers['Cache-Control'] = 'public, max-age=0'
+#     return r
 
+
+# If no cookie for user, render registration page
+# otherwise, render news feed
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/start', methods=['GET', 'POST'])
 def start(err=None):
-    # posts
-    # post_id = 0
     student_to_show = request.cookies.get('user_id')
     if not student_to_show:
         return render_template('register.html')
@@ -343,6 +372,9 @@ def start(err=None):
     related_posts.sort(key=lambda x: x.dtime, reverse=True)
     return render_template('feed.html', posts=related_posts, s=s)
 
+# Profile page
+# Optional to specify zid - if not specified,
+# return user's profile who is logged in
 
 @app.route('/user/<zid>', methods=['GET', 'POST'])
 def user(zid=None):
@@ -362,6 +394,10 @@ def user(zid=None):
         s=s,
         student=student_to_show)
 
+# Search results
+# Case insensitive search of all people and posts
+# if part of query matches any of the text in the person's
+# full name or their message
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
@@ -378,12 +414,12 @@ def results():
             for p in v.posts:
                 if query.lower() in p.fmessage.lower():
                     posts.append(p)
-                for c in p.comments:
-                    if query.lower() in c.fmessage.lower():
-                        comments.append(c)
-                    for r in c.replies:
-                        if query.lower() in r.fmessage.lower():
-                            replies.append(r)
+                # for c in p.comments:
+                #     if query.lower() in c.fmessage.lower():
+                #         comments.append(c)
+                #     for r in c.replies:
+                #         if query.lower() in r.fmessage.lower():
+                #             replies.append(r)
         return render_template(
             "results.html",
             s=s,
@@ -392,6 +428,9 @@ def results():
             comments=comments,
             replies=replies)
 
+# Login
+# Look up password associated with the user's zid and see if it matches
+# what was provided at login. If so, log user in and set cookies
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -422,6 +461,11 @@ def login():
                 err='zID is not registered.')
         return render_template("register.html", err='Password incorrect.')
 
+# New Post
+# When making a new post, format the post correctly (replace newlines with breaks)
+# and write the post with the correct filename into the user's directory
+# and then refresh that user's posts so that their news feed will render
+# correctly
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def newpost():
@@ -454,6 +498,8 @@ def newpost():
         s[student].refreshPosts()
         return redirect(url_for('start'))
 
+# New Comment
+# Based off new post
 
 @app.route('/newcomment', methods=['GET', 'POST'])
 def newcomment():
@@ -474,6 +520,8 @@ def newcomment():
         s[post_zid].refreshPosts()
         return redirect(url_for('start'))
 
+# New reply
+# Based off new post
 
 @app.route('/newreply', methods=['GET', 'POST'])
 def newreply():
@@ -497,6 +545,11 @@ def newreply():
         s[post_zid].refreshPosts()
         return redirect(url_for('start'))
 
+# Delete Post
+# This can be used for comments, replies or posts.
+# I have decided not to erase the original file, but instead just replace
+# the message with [Deleted]. This way the original comment structure around
+# can remain.
 
 @app.route('/deletepost', methods=['GET', 'POST'])
 def deletepost():
@@ -513,6 +566,10 @@ def deletepost():
         s[post_zid].refreshPosts()
     return redirect(url_for('start'))
 
+# New Account
+# Retrieves the information from the registration form, checks to see that
+# the zid is not already registered, and then creates a new directory for the
+# new user and writes to student.txt. The user is then logged in
 
 @app.route('/newaccount', methods=['GET', 'POST'])
 def newaccount():
@@ -554,9 +611,9 @@ def newaccount():
                 v.refreshPosts()
             return resp
     return redirect(url_for('start'))
-    # Use string.capitalize() to properly format user input
-    # ' '.join([x.capitalize() for x in str.split()])
 
+# Logout
+# Removes cookies and logs user out
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -565,6 +622,8 @@ def logout():
     resp.set_cookie('user_name', '', expires=0)
     return resp
 
+# Edit profile
+# Simply a redirect for the user to the edit profile page
 
 @app.route('/editprofile', methods=['GET', 'POST'])
 def editprofile():
@@ -572,6 +631,9 @@ def editprofile():
     student = s[student]
     return render_template("editprofile.html", student=student)
 
+# Submit Edit
+# This function commits the edits to file. We will write over student.txt
+# and any amendments to the existing profile will be present in the new profile
 
 @app.route('/submitedit', methods=['GET', 'POST'])
 def submitedit():
@@ -615,6 +677,10 @@ def submitedit():
         return redirect(url_for('user', zid=student))
     return redirect(url_for('start'))
 
+# Add Friend
+# Friend requests are yet to be implemented, so if you add a friend - they are
+# your friend. First we get the current list of friends, then we append the new 
+# friend to it, reassemble the list of friends and write it to our student.txt file.
 
 @app.route('/addfriend/<friend>', methods=['GET', 'POST'])
 def addfriend(friend):
@@ -626,7 +692,6 @@ def addfriend(friend):
             if line.startswith('friends'):
                 friends = line[len('friends') + 2:]
                 break
-    # FRIEND LIST
     friends = re.sub(r'[\(\)]', '', friends)
     friends = friends.split(', ')
     if '' in friends:
@@ -644,6 +709,8 @@ def addfriend(friend):
     st.refresh()
     return redirect(url_for('user', zid=student))
 
+# Remove Friend
+# The opposite process to add friend.
 
 @app.route('/removefriend/<friend>', methods=['GET', 'POST'])
 def removefriend(friend):
@@ -655,7 +722,6 @@ def removefriend(friend):
             if line.startswith('friends'):
                 friends = line[len('friends') + 2:]
                 break
-    # FRIEND LIST
     friends = re.sub(r'[\(\)]', '', friends)
     friends = friends.split(', ')
     friends.remove(friend)
@@ -674,12 +740,13 @@ def removefriend(friend):
     st.refresh()
     return redirect(url_for('user', zid=student))
 
-
-@app.route('/test')
-def test():
-    student = request.cookies.get('user_id')
-    return redirect(url_for('start'))
-
+# Friend Suggestions
+# FriendScore = ( 2 * Common Friends ) + ( Common Classes )
+# comparing two students, 'a' and 'b', and giving them a score approximating how
+# likely it is they will be friends. I have weighted more heaviliy common friends,
+# as I think if you have taken some common classes you may not know the person,
+# but if you have a few common friends - it is more likely you will socialise with
+# this person.
 
 @app.route('/friendsuggestions/<n>', methods=['GET', 'POST'])
 def friendsuggestions(n=None):
@@ -701,25 +768,6 @@ def friendsuggestions(n=None):
         n=n,
         s=s,
         max_n=max_n)
-
-
-def getName(zid):
-    details_filename = os.path.join(students_dir, zid, "student.txt")
-    with open(details_filename) as f:
-        for line in f:
-            line = line.rstrip()
-            if line.startswith('full_name'):
-                name = line[len('full_name') + 2:]
-                return name
-
-
-def getPicture(zid):
-    if os.path.exists(os.path.join(students_dir, zid, "img.jpg")):
-        picture = os.path.join(students_dir, zid, "img.jpg")
-    else:
-        picture = os.path.join("egg.gif")
-    return picture
-
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
