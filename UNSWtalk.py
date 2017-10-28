@@ -400,7 +400,7 @@ def user(zid=None):
 # full name or their message
 
 @app.route('/results', methods=['GET', 'POST'])
-def results():
+def results(people_n=0, post_n=0):
     if request.method == 'POST':
         query = request.form['query']
         people = []
