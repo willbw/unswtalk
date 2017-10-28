@@ -201,7 +201,6 @@ class Student:
         # COURSE LIST
         details['courses'] = re.sub(r'[\(\)]','', details['courses'])
         if details['courses'] == '':
-            print(self.zid, details['courses'])
             details['courses'] = []
         else:    
             details['courses'] = details['courses'].split(', ')
@@ -216,7 +215,6 @@ class Student:
         self.home_suburb = details['home_suburb']
         self.password = details['password']
         self.picture = details['picture']
-        print(self.picture)
         self.program = details['program']
 
     def refreshPosts(self):
@@ -371,7 +369,6 @@ def newcomment():
         post_zid = request.form['post_zid']
         post_id = request.form['post_id']
         message = request.form['comment']
-        print(post_id)
         num_comments = s[post_zid].posts[int(post_id)].num_comments
         newcomment_filename = post_id + '-' + str(num_comments) + '.txt'
         with open(os.path.join(students_dir, post_zid, newcomment_filename), 'w') as f:
@@ -421,7 +418,6 @@ def newaccount():
         if os.path.exists(os.path.join(students_dir, zid)):
             return render_template("register.html", err2='zID is already registered.')
         else:
-            print("ATTEMPTING TO REGGISTER")
             os.mkdir(os.path.join(students_dir, zid))
             # os.mkdir(os.path.join('static',students_dir, zid))
             full_name = request.form['inputName']
@@ -466,7 +462,6 @@ def logout():
 def editprofile():
     student = request.cookies.get('user_id') 
     student = s[student]
-    print(student.courses)
     return render_template("editprofile.html", student=student)
 
 @app.route('/submitedit', methods=['GET','POST'])
@@ -567,7 +562,6 @@ def removefriend(friend):
 @app.route('/test')
 def test():
     student = request.cookies.get('user_id') 
-    print(s[student].courses)
     return redirect(url_for('start'))
 
 @app.route('/friendsuggestions/<n>', methods=['GET', 'POST'])
@@ -583,7 +577,6 @@ def friendsuggestions(n=None):
     recs = sorted(d.items(), key=lambda x:x[1], reverse=True)
     max_n = min(len(recs), n+10)
     ten_recs = recs[n : max_n] 
-    print(n)
     return render_template('friendsuggestions.html', recs=ten_recs, n=n, s=s, max_n=max_n)
 
 def getName(zid):
