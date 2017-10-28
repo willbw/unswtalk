@@ -178,6 +178,7 @@ class Student:
         # USER DETAILS
         if os.path.exists(os.path.join(students_dir, self.zid, "img.jpg")):
             details['picture'] = os.path.join(students_dir, self.zid, "img.jpg") 
+            details['picture'] = details['picture'].replace('static/','')
         else: details['picture'] = os.path.join("egg.gif")
         with open(details_filename) as f:
             for line in f:
@@ -215,6 +216,7 @@ class Student:
         self.home_suburb = details['home_suburb']
         self.password = details['password']
         self.picture = details['picture']
+        print(self.picture)
         self.program = details['program']
 
     def refreshPosts(self):
@@ -250,6 +252,19 @@ s = {}
 updateStudentList()
 for k, v in s.items():
     v.refreshPosts()
+
+@app.after_request
+def add_header(r):
+    # Code taken from StackOverflow
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
@@ -486,8 +501,9 @@ def submitedit():
         picture = request.form.get('inputPicture', None) # remember this is optional
         if 'file' in request.files:
             pic = request.files['file']
-            # pic.save(os.path.join('static', students_dir, student, 'img.jpg'))
-            pic.save(os.path.join(students_dir, student, 'img.jpg'))
+            if pic.filename != '':
+                # pic.save(os.path.join('static', students_dir, student, 'img.jpg'))
+                pic.save(os.path.join(students_dir, student, 'img.jpg'))
         s[student].refresh()
         return redirect(url_for('user', zid=student))
     return redirect(url_for('start'))
@@ -553,6 +569,22 @@ def test():
     student = request.cookies.get('user_id') 
     print(s[student].courses)
     return redirect(url_for('start'))
+
+@app.route('/friendsuggestions/<n>')
+def friendsuggestions(n=None):
+    a = request.cookies.get('user_id') 
+    d = {}
+    if not n:
+        n = 0
+    else:
+        n = int(n)
+    for b in [x for x in s if x != a and x not in s[a].friends]:
+       d[s[b].zid] = 2 * len(set(s[a].friends) & set(s[b].friends)) + len(set(s[a].courses) & set(s[b].courses))
+    recs = sorted(d.items(), key=lambda x:x[1], reverse=True)
+    max_n = min(len(recs), n+10)
+    ten_recs = recs[n : max_n] 
+    print(n)
+    return render_template('friendsuggestions.html', recs=ten_recs, n=n, s=s, max_n=max_n)
 
 def getName(zid):
     details_filename = os.path.join(students_dir, zid, "student.txt")

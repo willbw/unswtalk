@@ -51,10 +51,10 @@
             <div class="form-group">
               <label for="inputCourses">Courses (must be comma seperated in the format "2017 S1 COMP9021")</label>
               {% if student.courses != [] %}
-              <input type="text" class="form-control" name="inputCourses" value="{% for c in student.courses %}{{ c }}{{ ', ' if not loop.last }}{% endfor %}" pattern="^([0-9]{4} S[12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} S[12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
+              <input type="text" class="form-control" name="inputCourses" value="{% for c in student.courses %}{{ c }}{{ ', ' if not loop.last }}{% endfor %}" pattern="^([0-9]{4} [XS][12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} [XS][12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
               {% endif %}
               {% if student.courses == [] %}
-              <input type="text" class="form-control" name="inputCourses" pattern="^([0-9]{4} S[12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} S[12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
+              <input type="text" class="form-control" name="inputCourses" pattern="^([0-9]{4} [XS][12] [A-Z]{4}[0-9]{4})*(, [0-9]{4} [XS][12] [A-Z]{4}[0-9]{4})*$" title="Please put a ', ' between course entries">
               {% endif %}
             </div>
             <div class="form-group">

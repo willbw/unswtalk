@@ -25,8 +25,7 @@
 		<div class="card mb-3 p-3">
     	<div class="card-body">
     	<h5>
-	        <!-- <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35"> -->
-	        <img src="{{url_for(s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
+	        <img src="{{url_for('static', filename=s[post.zid].picture)}}" class="rounded-circle" height="35" width="35">
 			<a href="{{url_for('user', zid=post.zid)}}" class="text-dark ml-1">{{ s[post.zid].full_name }}</a>
 		</h5>
     	<p class="text-muted">{{ post.time|safe }}</p>
@@ -56,8 +55,7 @@
 		  <div class="card ml-1 mt-2 bg-light">
 	    	<div class="card-body">
 	    	<p class="text-muted">
-		        <!-- <img src="{{url_for('static', filename=s[comment.zid].picture)}}" class="rounded-circle" height="35" width="35"> -->
-		        <img src="{{url_for(s[comment.zid].picture)}}" class="rounded-circle" height="35" width="35">
+		        <img src="{{url_for('static', filename=s[comment.zid].picture)}}" class="rounded-circle" height="35" width="35">
 				<a href="{{url_for('user', zid=comment.zid)}}" class="text-dark">{{ s[comment.zid].full_name }}</a>
 				{{ comment.time|safe }}
 			</p>
@@ -81,8 +79,7 @@
 			{% for reply in comment.replies %}
 			  <div class="card ml-2 mt-2 card-body bg-light">
 		    	<p class="text-muted">
-			        <!-- <img src="{{url_for('static', filename=s[reply.zid].picture)}}" class="rounded-circle" height="35" width="35"> -->
-			        <img src="{{url_for(s[reply.zid].picture)}}" class="rounded-circle" height="35" width="35">
+			        <img src="{{url_for('static', filename=s[reply.zid].picture)}}" class="rounded-circle" height="35" width="35">
 					<a href="{{url_for('user', zid=reply.zid)}}" class="text-dark">{{ s[reply.zid].full_name }}</a>
 					{{ reply.time|safe }}
 				</p>
