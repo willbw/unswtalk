@@ -24,10 +24,13 @@
 		</ul>
 	</div>
 
-	{% if recs %}
 	<div class="row">
-		<a href="{{ url_for('friendsuggestions', n=max_n) }}">Next Suggestions</a>
+		<a href="{{ url_for('friendsuggestions', n = n-10) }}">Previous  </a>
+	{% if recs %}
 	</div>
+	<div class="row">
+		<p class="text-right"><a href="{{ url_for('friendsuggestions', n = max_n) }}">Next</a></p>
 	{% endif %}
+	</div>
 </div>
 {% endblock %}
