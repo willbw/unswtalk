@@ -1,2 +1,67 @@
-05/10/17	18:00	18:15	put the first real entry in diary.txt (delete this line!)
-19/10/17        20:46   22:00   Commencing the assignment
+Date        Time     Commit Message
+28/10/17    23:13    Merge branch 'master' of gitlab.cse.unsw.EDU.AU:z5039981/17s2-comp2041-ass2
+28/10/17    23:13    changed the port
+28/10/17    23:10    removed print debug statements from unswtalk.py
+28/10/17    22:48    Testing on cse servers
+28/10/17    22:18    minor fixes
+28/10/17    22:05    friend suggestions added and working with pagination
+28/10/17    20:44    fixing path problems with static folder
+28/10/17    18:10    Changed deletion from a hard delete to soft - just changing text to [deleted]
+28/10/17    11:48    Adding template
+28/10/17    11:30    Added mobile navbar feature
+28/10/17    11:20    Edits now actually working
+28/10/17    11:14    adding functionality to edit profile
+26/10/17    18:51    Adding profile text
+24/10/17    08:03    Able to register new account
+24/10/17    06:53    added login validation errors, and began work on registration page
+23/10/17    18:33    Deleting comment funcionality added
+23/10/17    12:50    Update UNSWtalk.py to make search results case insensitive
+23/10/17    12:46    Update results.html
+23/10/17    12:42    Update results.html to remove comments from search results.
+23/10/17    12:10    Update base.html
+23/10/17    12:09    Update UNSWtalk.py
+23/10/17    12:06    Update UNSWtalk.py
+23/10/17    11:56    Update UNSWtalk.py
+23/10/17    11:55    Update UNSWtalk.py
+23/10/17    01:11    Work on deleting posts
+23/10/17    00:20    Search post done. That is all for level two, refinement to come
+22/10/17    23:49    Reply-to-comment done, only Search Post to go for level 2
+22/10/17    23:27    Attempting again to get cgi to work for UNSW
+22/10/17    23:24    url_for added so it might actually work on cgi...
+22/10/17    23:21    Adding templates I missed
+22/10/17    23:19    able to leave comments
+22/10/17    22:56    Framework to add comments begun. Committing before making further changes
+22/10/17    20:05    comments and replies are all linked to student and posts
+22/10/17    19:50    working on posts and comments
+22/10/17    18:49    Turning all posts into objects
+22/10/17    17:08    Made the courageous switch to object oriented programming mid way through the assignment
+22/10/17    14:41    Able to make posts succesfully.
+22/10/17    12:26    work on submitting posts... single line input working, multi line not working
+22/10/17    00:00    Fixed formatting issues
+21/10/17    22:55    added Age to profile
+21/10/17    22:54    added Age to profile
+21/10/17    22:36    minor aesthetic changes
+21/10/17    22:35    minor aesthetic changes
+21/10/17    22:31    minor aesthetic changes
+21/10/17    22:29    minor aesthetic changes
+21/10/17    22:28    fixed password display issue
+21/10/17    22:26    Displaying posts correctly with beautiful formatting
+21/10/17    21:29    post messages displaying correctly, able to isolate message
+21/10/17    18:51    adding diary function
+21/10/17    18:21    fixing cgi issue after login
+21/10/17    18:19    Forgot to add new templates
+21/10/17    18:17    log in and logout capability added
+21/10/17    16:37    Adding forgotten template file, search is working
+21/10/17    16:34    name search done
+21/10/17    15:47    viewport
+21/10/17    15:35    formatted friends list nicely
+21/10/17    15:23    friends list working
+21/10/17    14:52    fixing formatting
+21/10/17    14:42    hopefully got url working
+21/10/17    14:36    fixed tabs spaces issue
+21/10/17    14:24    working friends list (sort of)
+21/10/17    12:32    Simple interface with user info and pic up and running.
+19/10/17    22:55    up and running
+19/10/17    21:02    First commit on my own pc
+19/10/17    20:47    first commit
+12/10/17    15:08    files supplied to start the assignment
