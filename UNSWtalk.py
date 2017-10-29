@@ -728,6 +728,12 @@ def newaccount():
             return resp
     return redirect(url_for('start'))
 
+# New account validation
+# We generate a hash key when making a new account, then automatically suspend it
+# We will email the user a link with the user id and hash key - if this matches
+# what we have on the system, we log the user in and removed the validation.txt
+# as if validation.txt remains, user cannot log in.
+
 @app.route('/validate')
 def validate():
     user_id = request.args.get('zid', None)
