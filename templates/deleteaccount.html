@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+<h4>Account Deletion</h4>
+<p>Do you wish to <em>permanently delete</em> your account?</p>
+<div class="container">
+<div class="row">
+<form class="form-inline my-2 my-lg-0" action="{{ url_for('del_account') }}" method="POST">
+    <button class="btn btn-outline-success my-2 mr-sm-2 my-sm-0" type="submit">Yes</button>
+</form>
+<form class="form-inline my-2 my-lg-0" action="{{ url_for('start') }}" method="POST">
+    <button class="btn btn-outline-danger my-2 mr-sm-2 my-sm-0" type="submit">No</button>
+</form>
+</div>
+</div>
+
+
+
+{% endblock %}

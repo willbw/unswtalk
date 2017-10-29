@@ -1,5 +1,37 @@
 #!/usr/bin/env python3
 # !/web/cs2041/bin/python3.6.3
+#
+# Functionality in this site:
+# Level 0
+# [x] Display Student Information & Posts
+# [x] Interface
+
+# Level 1
+# [x] Friend list
+# [x] Search for names 
+# [x] Logging In & Out
+
+# Level 2
+# [x] Displaying Posts
+# [x] Making Posts
+# [x] Searching Posts 
+# [x] Commenting on Post and replying to Comments 
+
+# Level 3
+# [x] Friend/Unfriend Students
+# [x] Pagination of Posts and Search Results
+# [x] Student Account Creation -- NEED TO ADD email confirmation
+# [x] Profile Text
+# [x] Friend Requests
+# [x] Friend Suggestions
+# [ ] Password recovery
+# [ ] Uploadng & Deleting Images
+# [x] Editing Information 
+# [x] Deleting Posts
+# [x] Suspend/Delete UNSWtalk account
+# [ ] Notifications
+# [ ] Including Links, Images & Videos
+# [ ] Privacy
 
 import os
 import re
@@ -335,17 +367,19 @@ class Student:
 def updateStudentList():
     global s
     for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
-        print("SUSPENDED:",suspended_accounts)
         if zid not in s and zid not in suspended_accounts:
             s[zid] = Student(zid)
         elif zid in s and zid not in suspended_accounts:
             s[zid].refresh()
 
 
-# File with our list of suspended accounts
+# File with our list of suspended accounts and deleted accounts
 
 with open('suspended.txt', 'r') as f:
     suspended_accounts = [x.rstrip() for x in f.readlines()]
+
+with open('deletedacc.txt', 'r') as f:
+    deleted_accounts = [x.rstrip() for x in f.readlines()]
 
 # 's' is a dictionary in which to store all out of our students as objects
 # where zid is the key to the dictionary
@@ -375,7 +409,7 @@ def start(err=None):
     s[student_to_show].refreshPosts()
     related_posts = s[student_to_show].getPosts()
     related_posts.sort(key=lambda x: x.dtime, reverse=True)
-    return render_template('feed.html', posts=related_posts, s=s, suspended=suspended_accounts)
+    return render_template('feed.html', posts=related_posts, s=s, suspended=suspended_accounts, deleted=deleted_accounts)
 
 # Profile page
 # Optional to specify zid - if not specified,
@@ -638,6 +672,10 @@ def deletepost():
 def newaccount():
     if request.method == 'POST':
         zid = request.form['inputzID']
+        if zid in deleted_accounts:
+            return render_template(
+                "register.html",
+                err2='This account has been permanently deleted.')
         if os.path.exists(os.path.join(students_dir, zid)):
             return render_template(
                 "register.html",
@@ -861,8 +899,16 @@ def deleteconfirm():
 
 @app.route('/del_account', methods=['GET', 'POST'])
 def del_account():
-    rmstudent = request.cookies.get('user_id')
+    global deleted_accounts
     global s
+    rmstudent = request.cookies.get('user_id')
+    with open('deletedacc.txt', 'r') as file:
+        lines = file.readlines()
+        lines.append(rmstudent + '\n')
+    with open('deletedacc.txt', 'w') as file:
+        file.writelines(lines) 
+    with open('deletedacc.txt', 'r') as f:
+        deleted_accounts = [x.rstrip() for x in f.readlines()]
     del s[rmstudent]
     rmtree(os.path.join(students_dir, rmstudent))
     for k, student in s.items():

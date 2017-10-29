@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+<h4>Account Suspension</h4>
+<p>Do you wish to suspend your account?</p>
+<form class="form-inline my-2 my-lg-0" action="{{ url_for('suspend', user_id=user_id) }}" method="POST">
+    <button class="btn btn-outline-success my-2 mr-sm-2 my-sm-0" type="submit">Yes</button>
+</form>
+<form class="form-inline my-2 my-lg-0" action="{{ url_for('user') }}" method="POST">
+    <button class="btn btn-outline-danger my-2 mr-sm-2 my-sm-0" type="submit">No</button>
+</form>
+
+
+
+{% endblock %}
