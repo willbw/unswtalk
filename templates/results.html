@@ -17,20 +17,24 @@
 			{% if not people %}
 				No results :(
 			{% endif %}
+			{% if people %}
 			{% for p in people %}
 			    <li class="list-group-item">
 			    <img src="{{url_for('static',filename=s[p].picture)}}" class="rounded-circle" height="35" width="35">
 			    <a href="{{url_for('user', zid=p)}}">{{ s[p].full_name }}</a>
 			    </li>
 			{% endfor %}
+			{% endif %}
 		</ul>
 		<div class="row">
 			<div class="btn-group" role="group" aria-label="Basic example">
-				<form method="POST" action="{{ url_for('results', people_n = people_n - 10) }}">
+				<form method="POST" action="{{ url_for('results', people_n = people_n - 10, post_n=post_n) }}">
+					<input type="hidden" name="query" value="{{ searchquery }}">
 					<button type="submit" class="btn btn-secondary">Previous</button>
 				</form>
-				{% if people_results %}
-				<form method="POST" action="{{ url_for('results', people_n = max_people_n) }}">
+				{% if people %}
+				<form method="POST" action="{{ url_for('results', people_n=max_people_n, post_n=post_n) }}">
+					<input type="hidden" name="query" value="{{ searchquery }}">
 					<button type="submit" class="btn btn-secondary">Next</button>
 				</form>
 				{% endif %}
@@ -50,6 +54,20 @@
 			    </li>
 			{% endfor %}
 		</ul>
+		<div class="row">
+			<div class="btn-group" role="group" aria-label="Basic example">
+				<form method="POST" action="{{ url_for('results', post_n = post_n - 10, people_n=people_n) }}">
+					<input type="hidden" name="query" value="{{ searchquery }}">
+					<button type="submit" class="btn btn-secondary">Previous</button>
+				</form>
+				{% if posts %}
+				<form method="POST" action="{{ url_for('results', post_n=max_post_n, people_n=people_n) }}">
+					<input type="hidden" name="query" value="{{ searchquery }}">
+					<button type="submit" class="btn btn-secondary">Next</button>
+				</form>
+				{% endif %}
+			</div>
+		</div>
 	</div>
 </div>
 </div>

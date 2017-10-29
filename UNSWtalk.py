@@ -400,36 +400,59 @@ def user(zid=None):
 # full name or their message
 
 @app.route('/results', methods=['GET', 'POST'])
-def results(people_n=0, post_n=0):
-    if request.method == 'POST':
-        query = request.form['query']
-        people = []
-        posts = []
-        comments = []
-        replies = []
+def results():
+    query = request.form['query']
+    print("QUERY:", query)
+    people = []
+    posts = []
+    comments = []
+    replies = []
 
-        for k, v in s.items():
-            if query.lower() in v.full_name.lower():
-                people.append(k)
-            for p in v.posts:
-                if query.lower() in p.fmessage.lower():
-                    posts.append(p)
-                # for c in p.comments:
-                #     if query.lower() in c.fmessage.lower():
-                #         comments.append(c)
-                #     for r in c.replies:
-                #         if query.lower() in r.fmessage.lower():
-                #             replies.append(r)
-        people = people.sort()
+    people_n = request.args.get('people_n', 0)
+    if people_n != 0:
+        people_n = max(0, int(people_n))
 
-        return render_template(
-            "results.html",
-            s=s,
-            people=people,
-            posts=posts,
-            comments=comments,
-            replies=replies,
-            query=query)
+    post_n = request.args.get('post_n', 0)
+    if post_n != 0:
+        post_n = max(0, int(post_n))
+
+    for k, v in s.items():
+        if query.lower() in v.full_name.lower():
+            people.append(k)
+        for p in v.posts:
+            if query.lower() in p.fmessage.lower():
+                posts.append(p)
+            # for c in p.comments:
+            #     if query.lower() in c.fmessage.lower():
+            #         comments.append(c)
+            #     for r in c.replies:
+            #         if query.lower() in r.fmessage.lower():
+            #             replies.append(r)
+    if not people:
+        max_people_n = 0
+    else:
+        people = sorted(people, key=lambda x: s[x].full_name)
+        max_people_n = min(len(people), people_n + 10)
+        people = people[people_n : max_people_n]
+
+    if not posts:
+        max_post_n = 0
+    else:
+        max_post_n = min(len(posts), post_n + 10)
+        posts = posts[post_n : max_post_n]
+
+    return render_template(
+        "results.html",
+        s=s,
+        people=people,
+        people_n=people_n,
+        max_people_n=max_people_n,
+        posts=posts,
+        post_n=post_n,
+        max_post_n = max_post_n,
+        comments=comments,
+        replies=replies,
+        searchquery=query)
 
 # Friend Suggestions
 # FriendScore = ( 2 * Common Friends ) + ( Common Classes )
