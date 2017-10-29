@@ -425,11 +425,16 @@ def user(zid=None):
     else:
         student_to_show = zid
     session['n'] = n + 1
+    posts = s[student_to_show].posts
+    posts.sort(key=lambda x: x.dtime, reverse=True)
     return render_template(
         'profile.html',
         students_dir=students_dir,
         s=s,
-        student=student_to_show)
+        student=student_to_show,
+        posts=posts,
+        suspended=suspended_accounts,
+        deleted=deleted_accounts)
 
 # Search results
 # Case insensitive search of all people and posts
