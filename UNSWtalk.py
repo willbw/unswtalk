@@ -703,7 +703,7 @@ def newaccount():
                 f.write('friends: (z5195995)\n')
                 f.write('courses: ()\n')
             with open(os.path.join(students_dir, zid, 'validation.txt'), 'w') as f:
-                f.write(hash(zid))
+                f.write(str(hash(zid)))
             picture = request.form.get(
                 'inputPicture', None)  # remember this is optional
             resp = make_response(render_template("success.html"))
