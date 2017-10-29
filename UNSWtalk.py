@@ -281,6 +281,8 @@ class Student:
         # FRIEND LIST
         details['friends'] = re.sub(r'[\(\)]', '', details['friends'])
         details['friends'] = details['friends'].split(', ')
+        for susp in suspended_accounts:
+            if susp in details['friends']: details['friends'].remove(susp)
         # COURSE LIST
         details['courses'] = re.sub(r'[\(\)]', '', details['courses'])
         if details['courses'] == '':
@@ -321,10 +323,11 @@ class Student:
     def getPosts(self):
         my_related = []
         for key, student in s.items():
-            if student.posts:
-                for post in student.posts:
-                    if self.zid in post.related_to:
-                        my_related.append(post)
+            if key not in suspended_accounts:
+                if student.posts:
+                    for post in student.posts:
+                        if self.zid in post.related_to:
+                            my_related.append(post)
         return my_related
 
 # updateStudentList initalises all of our students in the s dictionary
@@ -372,7 +375,7 @@ def start(err=None):
     s[student_to_show].refreshPosts()
     related_posts = s[student_to_show].getPosts()
     related_posts.sort(key=lambda x: x.dtime, reverse=True)
-    return render_template('feed.html', posts=related_posts, s=s)
+    return render_template('feed.html', posts=related_posts, s=s, suspended=suspended_accounts)
 
 # Profile page
 # Optional to specify zid - if not specified,
@@ -858,10 +861,26 @@ def deleteconfirm():
 
 @app.route('/del_account', methods=['GET', 'POST'])
 def del_account():
-    student = request.cookies.get('user_id')
-    global s, suspended_accounts
-    del s[student]
-    rmtree(os.path.join(students_dir, student))
+    rmstudent = request.cookies.get('user_id')
+    global s
+    del s[rmstudent]
+    rmtree(os.path.join(students_dir, rmstudent))
+    for k, student in s.items():
+        if rmstudent in student.friends:
+            friends = student.friends
+            friends.remove(rmstudent)
+            if not friends:
+                friends = 'friends: ()\n'
+            else:
+                friends = 'friends: (' + ', '.join(friends) + ')\n'
+            with open(os.path.join(students_dir, k, 'student.txt'), 'r') as f:
+                lines = f.readlines()
+                for i, line in enumerate(lines):
+                    if line.startswith('friends'):
+                        lines[i] = friends
+            with open(os.path.join(students_dir, k, 'student.txt'), 'w') as f:
+                f.writelines(lines)
+            student.refresh()
     return redirect(url_for('logout'))
 
 if __name__ == '__main__':

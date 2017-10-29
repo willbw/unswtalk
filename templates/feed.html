@@ -51,7 +51,7 @@
 		 {% endif %}
 		</div>
 		<div class="collapse" id="{{post.hsh}}">
-		{% for comment in post.comments %}
+		{% for comment in post.comments if comment.zid not in suspended%}
 		  <div class="card ml-1 mt-2 bg-light">
 	    	<div class="card-body">
 	    	<p class="text-muted">
@@ -76,7 +76,7 @@
 			</form>
 		 {% endif %}
 		</div>
-			{% for reply in comment.replies %}
+			{% for reply in comment.replies if reply.zid not in suspended %}
 			  <div class="card ml-2 mt-2 card-body bg-light">
 		    	<p class="text-muted">
 			        <img src="{{url_for('static', filename=s[reply.zid].picture)}}" class="rounded-circle" height="35" width="35">
