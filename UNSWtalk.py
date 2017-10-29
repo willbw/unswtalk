@@ -6,7 +6,7 @@ import re
 import calendar
 from datetime import date, datetime
 from flask import Flask, render_template, session, request, make_response, redirect, url_for
-from shutil import copy
+from shutil import rmtree
 
 students_dir = os.path.join("static", "dataset-medium")
 
@@ -330,12 +330,19 @@ class Student:
 # updateStudentList initalises all of our students in the s dictionary
 
 def updateStudentList():
+    global s
     for zid in [x for x in os.listdir(students_dir) if not x.startswith('.')]:
-        if zid not in s:
+        print("SUSPENDED:",suspended_accounts)
+        if zid not in s and zid not in suspended_accounts:
             s[zid] = Student(zid)
-        else:
+        elif zid in s and zid not in suspended_accounts:
             s[zid].refresh()
 
+
+# File with our list of suspended accounts
+
+with open('suspended.txt', 'r') as f:
+    suspended_accounts = [x.rstrip() for x in f.readlines()]
 
 # 's' is a dictionary in which to store all out of our students as objects
 # where zid is the key to the dictionary
@@ -344,19 +351,13 @@ updateStudentList()
 for k, v in s.items():
     v.refreshPosts()
 
-# This functionality disabled temporarily
+# Ensuring that when new profile pics are uploaded, they are displayed as the 
+# cached images are revalidated
 
-# @app.after_request
-# def add_header(r):
-#     # Code taken from StackOverflow
-#     """
-#     Add headers to both force latest IE rendering engine or Chrome Frame,
-#     and also to cache the rendered page for 10 minutes.
-#     """
-#     r.headers["Pragma"] = "no-cache"
-#     r.headers["Expires"] = "0"
-#     r.headers['Cache-Control'] = 'public, max-age=0'
-#     return r
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'max-age=0, must-revalidate'
+    return response
 
 
 # If no cookie for user, render registration page
@@ -368,6 +369,7 @@ def start(err=None):
     student_to_show = request.cookies.get('user_id')
     if not student_to_show:
         return render_template('register.html')
+    s[student_to_show].refreshPosts()
     related_posts = s[student_to_show].getPosts()
     related_posts.sort(key=lambda x: x.dtime, reverse=True)
     return render_template('feed.html', posts=related_posts, s=s)
@@ -506,9 +508,12 @@ def login():
                     elif line.startswith('full_name'):
                         name = line[len('full_name') + 2:]
                 if user_id == this_zid and password == this_password:
-                    resp = make_response(render_template("success.html"))
-                    resp.set_cookie('user_id', user_id)
-                    resp.set_cookie('user_name', name)
+                    if user_id in suspended_accounts:
+                        resp = make_response(render_template("reactivateaccount.html", user_id=user_id, password=password))
+                    else:
+                        resp = make_response(render_template("success.html"))
+                        resp.set_cookie('user_id', user_id)
+                        resp.set_cookie('user_name', name)
                     return resp
         except OSError:
             return render_template(
@@ -795,6 +800,69 @@ def removefriend(friend):
     st.refresh()
     return redirect(url_for('user', zid=student))
 
+# Reactivate account
+# removes our account from the suspended.txt list of accounts
+# and logs the user back in (they have to have provided user and password already)
+
+@app.route('/reactivate', methods=['GET', 'POST'])
+def reactivate():
+    user_id = request.args.get('user_id', None)
+    with open('suspended.txt', 'r') as f:
+        lines = [x.rstrip() for x in f.readlines()]
+        lines.remove(user_id)
+    with open('suspended.txt', 'w') as f:
+        for line in lines:
+            if not line.strip(): continue
+            f.write(line)
+    global suspended_accounts
+    suspended_accounts = [x.rstrip() for x in lines]
+    updateStudentList()
+    resp = make_response(render_template("success.html"))
+    resp.set_cookie('user_id', user_id)
+    resp.set_cookie('user_name', s[user_id].full_name)
+    return resp
+
+# Confirmation page prior to suspending account
+
+@app.route('/suspendconfirm', methods=['GET', 'POST'])
+def suspendconfirm():
+    return render_template('suspendaccount.html')
+
+# Account suspension
+# Adds zID to the list of suspended accounts
+# logs user out, and removes student from our student directory.
+# Their posts will no longer show up in the news feed until reactivated.
+
+@app.route('/suspend', methods=['GET', 'POST'])
+def suspend():
+    student = request.cookies.get('user_id')
+    with open('suspended.txt', 'r') as f:
+        lines = f.readlines()
+        lines.append('\n'+student)
+    with open('suspended.txt', 'w') as f:
+        f.writelines(lines)
+    global s, suspended_accounts
+    del s[student]
+    suspended_accounts.append(student)
+    return redirect(url_for('logout'))
+
+# Confirmation page prior to deleting account
+
+@app.route('/deleteconfirm', methods=['GET', 'POST'])
+def deleteconfirm():
+    return render_template('deleteaccount.html')
+
+# Account deletion
+# Permanently deletes the directory in which the users files are stored
+# and logs them out
+
+@app.route('/del_account', methods=['GET', 'POST'])
+def del_account():
+    student = request.cookies.get('user_id')
+    global s, suspended_accounts
+    del s[student]
+    rmtree(os.path.join(students_dir, student))
+    return redirect(url_for('logout'))
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)

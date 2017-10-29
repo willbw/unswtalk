@@ -8,6 +8,8 @@
 	<h1 class="display-5" display="inline">{{ s[student].full_name }}</h1>
 	{% if student == my_id %}
 	<a class="ml-2" href="{{ url_for('editprofile') }}">Edit Profile</a>
+	<a class="ml-2 text-warning" href="{{ url_for('suspendconfirm') }}">Suspend Account</a>
+	<a class="ml-2 text-danger" href="{{ url_for('deleteconfirm') }}">Delete Account</a>
 	{% endif %}	
 	{% if student not in s[my_id].friends and student != my_id %}
 	<a class="ml-2" href="{{ url_for('addfriend', friend=student) }}">Add Friend</a>
