@@ -543,7 +543,7 @@ def login():
                     elif line.startswith('full_name'):
                         name = line[len('full_name') + 2:]
                 if user_id == this_zid and password == this_password:
-                    if os.path.exists(os.path.join(students_dir, zid, 'validation.txt')):
+                    if os.path.exists(os.path.join(students_dir, user_id, 'validation.txt')):
                         return render_template("pleasevalidate.html")
                     elif user_id in suspended_accounts:
                         resp = make_response(render_template("reactivateaccount.html", user_id=user_id, password=password))
@@ -738,10 +738,10 @@ def newaccount():
 def validate():
     user_id = request.args.get('zid', None)
     hashid = request.args.get('hashid', None)
-    with open(os.path.join(students_dir, zid, 'validation.txt'), 'r') as f:
+    with open(os.path.join(students_dir, user_id, 'validation.txt'), 'r') as f:
         correct_hash = f.read()
     if hashid == correct_hash:
-        os.remove(os.path.join(students_dir, zid, 'validation.txt'))
+        os.remove(os.path.join(students_dir, user_id, 'validation.txt'))
         with open('suspended.txt', 'r') as f:
             lines = [x.rstrip() for x in f.readlines()]
             lines.remove(user_id)
