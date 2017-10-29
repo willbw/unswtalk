@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block body_contents %}
+
+<p>Account is not validated. Please check your email for the validation link.</p>
+<meta http-equiv="refresh" content="1;url={{url_for('start')}}"/>
+{% endblock %}
