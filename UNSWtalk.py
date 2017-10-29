@@ -33,9 +33,7 @@
 # [ ] Including Links, Images & Videos
 # [ ] Privacy
 
-import os
-import re
-import calendar
+import os, re, calendar, subprocess
 from datetime import date, datetime
 from flask import Flask, render_template, session, request, make_response, redirect, url_for
 from shutil import rmtree
@@ -545,7 +543,9 @@ def login():
                     elif line.startswith('full_name'):
                         name = line[len('full_name') + 2:]
                 if user_id == this_zid and password == this_password:
-                    if user_id in suspended_accounts:
+                    if os.path.exists(os.path.join(students_dir, zid, 'validation.txt')):
+                        return render_template("pleasevalidate.html")
+                    elif user_id in suspended_accounts:
                         resp = make_response(render_template("reactivateaccount.html", user_id=user_id, password=password))
                     else:
                         resp = make_response(render_template("success.html"))
@@ -702,14 +702,28 @@ def newaccount():
                 f.write('home_latitude: -33.6672\n')
                 f.write('friends: (z5195995)\n')
                 f.write('courses: ()\n')
+            with open(os.path.join(students_dir, zid, 'validation.txt'), 'w') as f:
+                f.write(hash(zid))
             picture = request.form.get(
                 'inputPicture', None)  # remember this is optional
             resp = make_response(render_template("success.html"))
-            resp.set_cookie('user_id', zid)
-            resp.set_cookie('user_name', full_name)
-            updateStudentList()
-            for k, v in s.items():
-                v.refreshPosts()
+
+            # Suspend the account until it is validated
+            with open('suspended.txt', 'r') as f:
+                lines = f.readlines()
+                lines.append('\n'+zid)
+            with open('suspended.txt', 'w') as f:
+                f.writelines(lines)
+            global suspended_accounts
+            suspended_accounts.append(zid)
+
+            send_email(email, 'Activate your UNSWtalk account', 'Please click here ' + url_for('start', _external=True))
+
+            # resp.set_cookie('user_id', zid)
+            # resp.set_cookie('user_name', full_name)
+            # updateStudentList()
+            # for k, v in s.items():
+            #     v.refreshPosts()
             return resp
     return redirect(url_for('start'))
 
@@ -928,6 +942,22 @@ def del_account():
                 f.writelines(lines)
             student.refresh()
     return redirect(url_for('logout'))
+
+def send_email(to, subject, message):
+    mutt = [
+            'mutt',
+            '-s',
+            subject,
+            '-e', 'set copy=no',
+            '-e', 'set realname=UNSWtalk',
+            '--', to
+    ]
+    subprocess.run(
+            mutt,
+            input = message.encode('utf8'),
+            stderr = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+    )
 
 if __name__ == '__main__':
     # app.secret_key = os.urandom(12)
