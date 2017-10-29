@@ -1,4 +1,25 @@
 Date        Time     Commit Message
+29/10/17    16:12    Merge branch 'master' of https://gitlab.cse.unsw.edu.au/z5039981/17s2-comp2041-ass2
+Joining uni version and home version
+29/10/17    16:12    Adding explanatory notes
+29/10/17    16:09    Working on cgi
+29/10/17    15:55    Email link should work now, moving to cse machine to test
+29/10/17    15:55    Email link should work now, moving to cse machine to test
+29/10/17    15:47    Rudimentary email sending done
+29/10/17    15:43    adding missing files
+29/10/17    15:39    email functionality being added
+29/10/17    15:24    Adding email functionality
+29/10/17    14:10    work on deleted/suspended accounts comments displayig correctly
+29/10/17    13:39    Added account deletion and account suspension features
+29/10/17    11:38    Pagination of search results done for people and posts
+29/10/17    10:49    adding unswtalk
+29/10/17    10:47    Trying to get header working again
+29/10/17    10:11    Merge branch 'master' of https://gitlab.cse.unsw.edu.au/z5039981/17s2-comp2041-ass2
+I don't know why
+29/10/17    10:11    Adding my changes
+29/10/17    10:10    conflict fixed
+29/10/17    04:51    Formatting code, adding comments
+29/10/17    04:14    Formatting code, adding comments
 28/10/17    23:13    Merge branch 'master' of gitlab.cse.unsw.EDU.AU:z5039981/17s2-comp2041-ass2
 28/10/17    23:13    changed the port
 28/10/17    23:10    removed print debug statements from unswtalk.py
