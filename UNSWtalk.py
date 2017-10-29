@@ -703,7 +703,8 @@ def newaccount():
                 f.write('friends: (z5195995)\n')
                 f.write('courses: ()\n')
             with open(os.path.join(students_dir, zid, 'validation.txt'), 'w') as f:
-                f.write(str(hash(zid)))
+                hashid = str(hash(zid))
+                f.write(hashid)
             picture = request.form.get(
                 'inputPicture', None)  # remember this is optional
             resp = make_response(render_template("success.html"))
@@ -717,7 +718,7 @@ def newaccount():
             global suspended_accounts
             suspended_accounts.append(zid)
 
-            send_email(email, 'Activate your UNSWtalk account', 'Please click here ' + url_for('start', _external=True))
+            send_email(email, 'Activate your UNSWtalk account', 'Please click here ' + url_for('validate', zid=zid, hashid=hashid, _external=True))
 
             # resp.set_cookie('user_id', zid)
             # resp.set_cookie('user_name', full_name)
@@ -726,6 +727,30 @@ def newaccount():
             #     v.refreshPosts()
             return resp
     return redirect(url_for('start'))
+
+@app.route('/validate')
+def validate():
+    user_id = request.args.get('zid', None)
+    hashid = request.args.get('hashid', None)
+    with open(os.path.join(students_dir, zid, 'validation.txt'), 'r') as f:
+        correct_hash = f.read()
+    if hashid == correct_hash:
+        os.remove(os.path.join(students_dir, zid, 'validation.txt'))
+        with open('suspended.txt', 'r') as f:
+            lines = [x.rstrip() for x in f.readlines()]
+            lines.remove(user_id)
+        with open('suspended.txt', 'w') as f:
+            for line in lines:
+                if not line.strip(): continue
+                f.write(line)
+        global suspended_accounts
+        suspended_accounts = [x.rstrip() for x in lines]
+        updateStudentList()
+        resp = make_response(render_template("success.html"))
+        resp.set_cookie('user_id', user_id)
+        resp.set_cookie('user_name', s[user_id].full_name)
+        return resp
+    return render_template("pleasevalidate.html")
 
 # Logout
 # Removes cookies and logs user out
